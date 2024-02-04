@@ -1,11 +1,54 @@
 {
   "Version": 1,
-  "Hash": "jx4gBj5TQjGVDLtRdoT+xeXliohWLLucr+DimJPyHG4=",
+  "Hash": "45wlGixFGHEUbBSqlw8lk1AzrPqOYjY8VNgsM2zy7xY=",
   "Source": "Hospital_FinalP",
   "BasePath": "_content/Hospital_FinalP",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [],
-  "DiscoveryPatterns": [],
-  "Assets": []
+  "DiscoveryPatterns": [
+    {
+      "Name": "Hospital_FinalP\\wwwroot",
+      "Source": "Hospital_FinalP",
+      "ContentRoot": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\",
+      "BasePath": "_content/Hospital_FinalP",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\Screenshot 2023-12-13 231645.png37b4990b-2678-4f4a-b0af-23b342661b27.png",
+      "SourceId": "Hospital_FinalP",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\",
+      "BasePath": "_content/Hospital_FinalP",
+      "RelativePath": "Images/Screenshot 2023-12-13 231645.png37b4990b-2678-4f4a-b0af-23b342661b27.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Images\\Screenshot 2023-12-13 231645.png37b4990b-2678-4f4a-b0af-23b342661b27.png"
+    },
+    {
+      "Identity": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\Screenshot 2023-12-13 233552.pnga7a2f762-7e56-49e9-b877-0434f557f2d4.png",
+      "SourceId": "Hospital_FinalP",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\",
+      "BasePath": "_content/Hospital_FinalP",
+      "RelativePath": "Images/Screenshot 2023-12-13 233552.pnga7a2f762-7e56-49e9-b877-0434f557f2d4.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Images\\Screenshot 2023-12-13 233552.pnga7a2f762-7e56-49e9-b877-0434f557f2d4.png"
+    }
+  ]
 }

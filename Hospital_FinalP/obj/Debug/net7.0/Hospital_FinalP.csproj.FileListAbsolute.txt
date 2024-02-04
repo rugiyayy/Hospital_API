@@ -263,3 +263,8 @@ C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\obj\Debug\net7.0\refint\Ho
 C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\obj\Debug\net7.0\Hospital_FinalP.pdb
 C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\obj\Debug\net7.0\Hospital_FinalP.genruntimeconfig.cache
 C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\obj\Debug\net7.0\ref\Hospital_FinalP.dll
+C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Microsoft.AspNetCore.JsonPatch.dll
+C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
+C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Newtonsoft.Json.Bson.dll
+C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Hospital_FinalP.staticwebassets.runtime.json

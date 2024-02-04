@@ -1,6 +1,12 @@
-﻿namespace Hospital_FinalP.Services.Abstract
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace Hospital_FinalP.Services.Abstract
 {
-    public class IPatientRegistrationService
+    public interface IPatientRegistrationService
     {
+        //public void RegisterPatientAsync(PatientRegistrationModel model);
+
+
+
     }
 }

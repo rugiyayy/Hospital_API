@@ -1,0 +1,29 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\Screenshot 2023-12-13 231645.png37b4990b-2678-4f4a-b0af-23b342661b27.png",
+      "PackagePath": "staticwebassets\\Images\\Screenshot 2023-12-13 231645.png37b4990b-2678-4f4a-b0af-23b342661b27.png"
+    },
+    {
+      "Id": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\Screenshot 2023-12-13 233552.pnga7a2f762-7e56-49e9-b877-0434f557f2d4.png",
+      "PackagePath": "staticwebassets\\Images\\Screenshot 2023-12-13 233552.pnga7a2f762-7e56-49e9-b877-0434f557f2d4.png"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.Hospital_FinalP.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.build.Hospital_FinalP.props",
+      "PackagePath": "build\\Hospital_FinalP.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.buildMultiTargeting.Hospital_FinalP.props",
+      "PackagePath": "buildMultiTargeting\\Hospital_FinalP.props"
+    },
+    {
+      "Id": "obj\\Debug\\net7.0\\staticwebassets\\msbuild.buildTransitive.Hospital_FinalP.props",
+      "PackagePath": "buildTransitive\\Hospital_FinalP.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

@@ -12,7 +12,7 @@ namespace Hospital_FinalP.Entities
         public int PatientId { get; set; }
         public Patient Patient { get; set; }
         //public VisitType VisitType { get; set; }
-       
+        public string  Description { get; set; } //reason sympoms
         public decimal Cost { get; set; }
 
 

@@ -13,10 +13,14 @@ namespace Hospital_FinalP.DTOs.Doctors
         public int DepartmentId { get; set; }
         public int DoctorTypeId { get; set; }
 
+        public string DoctorTypeName { get; set; }
+        public string DepartmentName { get; set; }
+
+
         public DocPhotoGetDto DocPhoto { get; set; }
         public int MaxAppointments { get; set; } // select default value 
-        public DoctorDetailPostDto DoctorDetail { get; set; }
-        public ExaminationRoomPostDto ExaminationRoom { get; set; }
+        public DoctorDetailGetDto DoctorDetail { get; set; }
+        public ExaminationRoomGetDto ExaminationRoom { get; set; }
 
     }
 }

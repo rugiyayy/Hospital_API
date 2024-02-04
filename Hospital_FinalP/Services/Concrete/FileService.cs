@@ -18,7 +18,7 @@ namespace Hospital_FinalP.Services.Concrete
             try
             {
                 var imgPath = _env.ContentRootPath;
-                var path=Path.Combine(imgPath, "Images");
+                var path=Path.Combine(imgPath, "wwwroot", "Images");
 
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
@@ -43,7 +43,8 @@ namespace Hospital_FinalP.Services.Concrete
         public void DeleteFile(string fileName)
         {
             var imgPath = _env.ContentRootPath;
-            var path = Path.Combine(imgPath, "Images");
+            var path = Path.Combine(imgPath, "wwwroot", "Images");
+
             string filePath = Path.Combine(path, fileName);
 
             if (File.Exists(filePath))

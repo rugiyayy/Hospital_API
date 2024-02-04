@@ -1,6 +1,9 @@
-﻿namespace Hospital_FinalP.Services.Concrete
+﻿using Hospital_FinalP.Services.Abstract;
+
+namespace Hospital_FinalP.Services.Concrete
 {
-    public class PatientRegistrationService
-    {
-    }
+    //public class PatientRegistrationService :IPatientRegistrationService
+    //{
+
+    //}
 }
