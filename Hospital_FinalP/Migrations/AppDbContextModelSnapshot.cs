@@ -99,15 +99,15 @@ namespace Hospital_FinalP.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Cost")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
+
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("time");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
@@ -143,9 +143,38 @@ namespace Hospital_FinalP.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("ServiceCost")
+                        .HasColumnType("decimal(18,2)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.Disease", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DiseaseName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Symptom")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.ToTable("Disease");
                 });
 
             modelBuilder.Entity("Hospital_FinalP.Entities.DocPhoto", b =>
@@ -192,9 +221,6 @@ namespace Hospital_FinalP.Migrations
                     b.Property<int>("MaxAppointments")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("ServiceCost")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("DepartmentId");
@@ -222,15 +248,7 @@ namespace Hospital_FinalP.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -312,13 +330,59 @@ namespace Hospital_FinalP.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Title")
+                    b.HasKey("Id");
+
+                    b.ToTable("Patients");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.Symptom", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiseaseId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SymptomName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Patients");
+                    b.HasIndex("DiseaseId");
+
+                    b.ToTable("Symptom");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.WorkingSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId")
+                        .IsUnique();
+
+                    b.ToTable("WorkingSchedules");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -473,6 +537,17 @@ namespace Hospital_FinalP.Migrations
                     b.Navigation("Patient");
                 });
 
+            modelBuilder.Entity("Hospital_FinalP.Entities.Disease", b =>
+                {
+                    b.HasOne("Hospital_FinalP.Entities.Department", "Department")
+                        .WithMany("Diseases")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
             modelBuilder.Entity("Hospital_FinalP.Entities.DocPhoto", b =>
                 {
                     b.HasOne("Hospital_FinalP.Entities.Doctor", "Doctor")
@@ -519,6 +594,28 @@ namespace Hospital_FinalP.Migrations
                     b.HasOne("Hospital_FinalP.Entities.Doctor", "Doctor")
                         .WithOne("ExaminationRoom")
                         .HasForeignKey("Hospital_FinalP.Entities.ExaminationRoom", "DoctorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Doctor");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.Symptom", b =>
+                {
+                    b.HasOne("Hospital_FinalP.Entities.Disease", "Disease")
+                        .WithMany("Symptoms")
+                        .HasForeignKey("DiseaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Disease");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.WorkingSchedule", b =>
+                {
+                    b.HasOne("Hospital_FinalP.Entities.Doctor", "Doctor")
+                        .WithOne("WorkingSchedule")
+                        .HasForeignKey("Hospital_FinalP.Entities.WorkingSchedule", "DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -578,7 +675,14 @@ namespace Hospital_FinalP.Migrations
 
             modelBuilder.Entity("Hospital_FinalP.Entities.Department", b =>
                 {
+                    b.Navigation("Diseases");
+
                     b.Navigation("Doctors");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.Disease", b =>
+                {
+                    b.Navigation("Symptoms");
                 });
 
             modelBuilder.Entity("Hospital_FinalP.Entities.Doctor", b =>
@@ -591,6 +695,9 @@ namespace Hospital_FinalP.Migrations
                         .IsRequired();
 
                     b.Navigation("ExaminationRoom")
+                        .IsRequired();
+
+                    b.Navigation("WorkingSchedule")
                         .IsRequired();
                 });
 

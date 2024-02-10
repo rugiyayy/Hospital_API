@@ -6,28 +6,25 @@ namespace Hospital_FinalP.Entities
     {
         public int Id { get; set; }
         public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+
+        public TimeSpan Duration { get; set; }
+        public DateTime EndTime
+        {
+            get => StartTime.Add(Duration);
+            set => Duration = value - StartTime;
+        }
+
         public int DoctorId { get; set; }
-        public  Doctor Doctor { get; set; }
+        public Doctor Doctor { get; set; }
         public int PatientId { get; set; }
         public Patient Patient { get; set; }
-        //public VisitType VisitType { get; set; }
-        public string  Description { get; set; } //reason sympoms
-        public decimal Cost { get; set; }
+        public string Description { get; set; }
 
-
-        //public decimal AppointmentCost()
+        //public Appointment()
         //{
-        //    if (Doctor != null)
-        //    {
-        //        Cost = Doctor.CalculateServiceCost();
-        //    }
-        //    return Cost;
-
+        //    Duration = TimeSpan.FromMinutes(30);
         //}
 
-
-        //public string VisitType { get; set; }//"In-Office" or "Virtual"
-        //public decimal Cost { get; set; }
+        
     }
 }

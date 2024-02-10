@@ -6,6 +6,7 @@ namespace Hospital_FinalP.DTOs.Department
     {
         public string Name { get; set; }
         public string DepartmentDescription { get; set; }
+        public decimal ServiceCost { get; set; }
     }
 
 
@@ -23,6 +24,13 @@ namespace Hospital_FinalP.DTOs.Department
                 .NotNull().WithMessage("Department Description is required!")
                 .Must(name => !string.IsNullOrWhiteSpace(name)).WithMessage("Department Description is empty")
                 .Length(3, 200).WithMessage("Department Description can't be less than 3 characters and more than 200 characters!");
+
+            RuleFor(x => x.ServiceCost)
+               .NotEmpty().WithMessage("Service Price is required!")
+               .Must(cost => cost > 0).WithMessage("Service Price must be greater than 0.")
+               .Must(cost => !string.IsNullOrWhiteSpace(cost.ToString())).WithMessage("Appointment Price should not be empty or contain only white spaces.")
+              .PrecisionScale(4, 2, true);
+
         }
     }
 }

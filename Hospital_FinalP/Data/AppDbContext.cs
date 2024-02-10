@@ -16,6 +16,8 @@ namespace Hospital_FinalP.Data
         public DbSet<AppUser> Users { get; set; }
         public DbSet<Appointment> Appointments { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<WorkingSchedule> WorkingSchedules { get; set; }
+
         public DbSet<DocPhoto> DocPhotos { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<DoctorDetail> DoctorDetails { get; set; }
@@ -24,14 +26,6 @@ namespace Hospital_FinalP.Data
         public DbSet<DoctorType> DoctorTypes { get; set; }
 
         
-
-        //public DbSet<Language> Languages { get; set; }
-        //public DbSet<RoomAssignment> RoomAssignments { get; set; }
-        //public DbSet<WorkingSchedule> WorkingSchedules { get; set; }
-
-
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.Entity<Order>()

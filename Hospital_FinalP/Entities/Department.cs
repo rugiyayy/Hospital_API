@@ -11,5 +11,9 @@
         public List<Disease> Diseases { get; set; }
 
 
+
+        public decimal ServiceCost { get; set; } 
+
+
     }
 }

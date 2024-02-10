@@ -1,0 +1,21 @@
+﻿using AutoMapper;
+using Hospital_FinalP.DTOs.Doctors;
+using Hospital_FinalP.DTOs.Patients;
+using Hospital_FinalP.Entities;
+
+namespace Hospital_FinalP.AutoMapper
+{
+    public class PatientProfile : Profile
+    {
+        public PatientProfile()
+        {
+            CreateMap<Patient, PatientGetDto>();
+            CreateMap<PatientPostDto, Patient>();
+            CreateMap<PatientPutDto, Patient>();
+
+
+        }
+
+
+    }
+}

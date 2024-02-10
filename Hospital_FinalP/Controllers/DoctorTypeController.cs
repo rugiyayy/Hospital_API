@@ -24,6 +24,8 @@ namespace Hospital_FinalP.Controllers
         [HttpGet]
         public IActionResult Get()
         {
+            if (_context.DoctorTypes == null) return NotFound();
+
             var typesDto = _context.DoctorTypes
                .Select(x => _mapper.Map(x, new DoctorTypeGetDto()))
                .AsNoTracking()
@@ -35,6 +37,8 @@ namespace Hospital_FinalP.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
+            if (_context.DoctorTypes == null) return NotFound();
+
             var type = _context.DoctorTypes
                 .FirstOrDefault(x => x.Id == id);
             if (type is null) return NotFound();

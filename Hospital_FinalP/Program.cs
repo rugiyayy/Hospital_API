@@ -59,7 +59,12 @@ namespace Hospital_FinalP
                 };
             });
 
-
+            builder.Services.AddControllersWithViews().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                options.SerializerSettings.DateFormatString = "dd-MM-yyyy";
+                options.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
+            });
             //cors
             builder.Services.AddCors(options =>
             {
@@ -119,11 +124,11 @@ namespace Hospital_FinalP
             builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
 
             var app = builder.Build();
-            
-            
+
+
             await DataSeed.InitializeAsync(app.Services, app.Configuration);
-            
-            
+
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {

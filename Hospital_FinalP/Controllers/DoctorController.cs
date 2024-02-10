@@ -30,8 +30,38 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult GetAll(/*[FromQuery(Name = "_page")] int page, [FromQuery(Name = "_perPage")]  int perPage*/)
         {
+            //    page = (page <= 0) ? 1 : page;
+
+            //    decimal doctorCount = _context.Doctors.Count();
+
+
+            //    int totalPages = (int)Math.Ceiling(doctorCount / perPage);
+
+
+            //var doctorDto = _context.Doctors
+            //    .Include(x => x.DoctorType)
+            //    .Include(x => x.Department)
+            //    .Include(x => x.DocPhoto)
+            //    .Include(x => x.DoctorDetail)
+            //    .Include(x => x.ExaminationRoom);
+
+            //  //.OrderBy(x => x.Id)
+            //  //  .Skip((page - 1) * perPage)
+            //  //  .Take(perPage)
+            //  //  .AsNoTracking()
+            //  //  .ToList();
+
+            //var dto = doctorDto.Select(x => _mapper.Map(x, new DoctorGetDto
+            //{
+            //    DoctorTypeName = x.DoctorType.Name,
+            //    DepartmentName = x.Department.Name,
+
+            //}));
+
+            //return Ok(dto);
+
             var doctorDto = _context.Doctors
                 .Include(x => x.DoctorType)
                 .Include(x => x.Department)
@@ -42,17 +72,21 @@ namespace Hospital_FinalP.Controllers
                 {
                     DoctorTypeName = x.DoctorType.Name,
                     DepartmentName = x.Department.Name,
+                    ServiceCost=x.Department.ServiceCost,
+                  
+                   
 
-                }))
-                .AsNoTracking()
+                })).AsNoTracking()
                 .ToList();
 
             return Ok(doctorDto);
-        }
 
+
+        }
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
+            if (_context.Doctors == null) return NotFound();
             var doctor = _context.Doctors
                 .Include(x => x.DoctorType)
                 .Include(x => x.Department)
@@ -79,12 +113,10 @@ namespace Hospital_FinalP.Controllers
 
             if (existingDoctor != null)
             {
-                return BadRequest("Doctor with the same FullName already exists.");
+                return Conflict("Doctor with the same FullName already exists.");
             }
 
-
-
-            // Check if the provided DepartmentId exists
+          
             var existingDepartment = _context.Departments.FirstOrDefault(dep => dep.Id == dto.DepartmentId);
             if (existingDepartment == null)
             {
@@ -92,7 +124,6 @@ namespace Hospital_FinalP.Controllers
                 return BadRequest($"Department with Id {dto.DepartmentId} does not exist.");
             }
 
-            // Check if the provided DoctorTypeId exists
             var existingDoctorType = _context.DoctorTypes.FirstOrDefault(dt => dt.Id == dto.DoctorTypeId);
             if (existingDoctorType == null)
             {
@@ -106,13 +137,24 @@ namespace Hospital_FinalP.Controllers
 
             if (existingExaminationRoom != null)
             {
-                return BadRequest($"Examination Room with Room Number {dto.ExaminationRoom.RoomNumber} is already associated with another doctor.");
+                return Conflict($"Examination Room with Room Number {dto.ExaminationRoom.RoomNumber} is already associated with another doctor.");
             }
 
 
 
 
+
             var doctorEntity = _mapper.Map<Doctor>(dto);
+
+            doctorEntity.WorkingSchedule = new WorkingSchedule
+            {
+                StartTime = TimeSpan.Parse(dto.WorkingSchedule.StartTime),
+                EndTime = TimeSpan.Parse(dto.WorkingSchedule.EndTime)
+            };
+            doctorEntity.MaxAppointments = doctorEntity.CalculateMaxAppointments(TimeSpan.FromMinutes(30)); // Assuming appointment duration is 30 minutes
+
+
+
             _context.Add(doctorEntity);
 
 
@@ -145,7 +187,7 @@ namespace Hospital_FinalP.Controllers
 
             _context.SaveChanges();
             var docUser = new AppUser { UserName = dto.DoctorDetail.Email, Email = dto.DoctorDetail.Email, FullName = dto.FullName };
-            var result = await userManager.CreateAsync(docUser, dto.DoctorDetail.Password);
+            var result = await userManager.CreateAsync(docUser, dto.Password);
 
             if (result.Succeeded)
             {
