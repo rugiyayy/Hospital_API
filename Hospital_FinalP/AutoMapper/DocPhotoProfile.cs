@@ -10,6 +10,7 @@ namespace Hospital_FinalP.AutoMapper
         {
             CreateMap<DocPhotoGetDto, DocPhoto>().ReverseMap();
 
+
         }
     }
 }

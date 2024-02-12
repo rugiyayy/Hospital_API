@@ -72,9 +72,9 @@ namespace Hospital_FinalP.Controllers
                 {
                     DoctorTypeName = x.DoctorType.Name,
                     DepartmentName = x.Department.Name,
-                    ServiceCost=x.Department.ServiceCost,
-                  
-                   
+                    ServiceCost = x.Department.ServiceCost,
+
+
 
                 })).AsNoTracking()
                 .ToList();
@@ -86,7 +86,6 @@ namespace Hospital_FinalP.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            if (_context.Doctors == null) return NotFound();
             var doctor = _context.Doctors
                 .Include(x => x.DoctorType)
                 .Include(x => x.Department)
@@ -95,7 +94,7 @@ namespace Hospital_FinalP.Controllers
                 .Include(x => x.ExaminationRoom).FirstOrDefault(x => x.Id == id);
 
 
-            if (doctor is null) return NotFound();
+            if (doctor is null) return NotFound("Doctor Not Found");
 
             var dto = _mapper.Map<DoctorGetDto>(doctor);
             _mapper.Map(doctor, dto);
@@ -116,7 +115,7 @@ namespace Hospital_FinalP.Controllers
                 return Conflict("Doctor with the same FullName already exists.");
             }
 
-          
+
             var existingDepartment = _context.Departments.FirstOrDefault(dep => dep.Id == dto.DepartmentId);
             if (existingDepartment == null)
             {
@@ -141,16 +140,23 @@ namespace Hospital_FinalP.Controllers
             }
 
 
-
-
-
             var doctorEntity = _mapper.Map<Doctor>(dto);
 
             doctorEntity.WorkingSchedule = new WorkingSchedule
             {
-                StartTime = TimeSpan.Parse(dto.WorkingSchedule.StartTime),
-                EndTime = TimeSpan.Parse(dto.WorkingSchedule.EndTime)
+                StartTime = dto.WorkingSchedule.StartTime != null ? TimeSpan.Parse(dto.WorkingSchedule.StartTime) : TimeSpan.FromHours(8), // Default value for StartTime is 8 AM
+                EndTime = dto.WorkingSchedule.EndTime != null ? TimeSpan.Parse(dto.WorkingSchedule.EndTime) : TimeSpan.FromHours(17), // Default value for EndTime is 5 PM
+                WorkingDays = dto.WorkingSchedule.WorkingDays.Select(d => new WorkingDay { DayOfWeek = d.DayOfWeek }).ToList()
             };
+
+
+
+
+
+
+
+
+
             doctorEntity.MaxAppointments = doctorEntity.CalculateMaxAppointments(TimeSpan.FromMinutes(30)); // Assuming appointment duration is 30 minutes
 
 
@@ -205,28 +211,7 @@ namespace Hospital_FinalP.Controllers
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromForm] DoctorPutDto dto)
         {
-            var existingDoctor = _context.Doctors
-        .AsEnumerable()
-        .FirstOrDefault(d =>
-            d.Id != id &&
-            d.FullName.Trim().Equals(dto.FullName.Trim(), StringComparison.OrdinalIgnoreCase));
-
-            if (existingDoctor != null)
-            {
-
-                return BadRequest("Doctor with the same FullName already exists.");
-            }
-
-
-
-            var existingExaminationRoom = _context.ExaminationRooms
-                    .FirstOrDefault(er => er.DoctorId != id &&
-                     er.RoomNumber == dto.ExaminationRoom.RoomNumber);
-
-            if (existingExaminationRoom != null)
-            {
-                return BadRequest($"Examination Room with Room Number {dto.ExaminationRoom.RoomNumber} is already associated with another doctor.");
-            }
+           
 
             var existingDoctorWithEmail = _context.DoctorDetails
        .Where(dd => dd.DoctorId != id)
@@ -238,15 +223,28 @@ namespace Hospital_FinalP.Controllers
                 return BadRequest($"Email {dto.DoctorDetail.Email} is already associated with another doctor.");
             }
             var doctor = _context.Doctors
-                .Include(x => x.DoctorType)
-                .Include(x => x.Department)
                 .Include(x => x.DocPhoto)
                 .Include(x => x.DoctorDetail)
                 .Include(x => x.ExaminationRoom).FirstOrDefault(x => x.Id == id);
 
             if (doctor is null) return NotFound();
 
-            _mapper.Map(dto, doctor);
+
+
+            if (dto.DoctorDetail != null)
+            {
+                doctor.DoctorDetail = new DoctorDetail
+                {
+                    PhoneNumber = dto.DoctorDetail.PhoneNumber,
+                    Email = dto.DoctorDetail.Email,
+                };
+            }
+
+
+
+
+
+            //_mapper.Map(dto, doctor);
 
             if (doctor.DocPhoto != null)
             {
@@ -275,7 +273,7 @@ namespace Hospital_FinalP.Controllers
             var doctor = _context.Doctors
                 .Include(d => d.DocPhoto)
                 .FirstOrDefault(x => x.Id == id);
-            if (doctor is null) return NotFound();
+            if (doctor is null) return NotFound("Doctor Not Found");
 
 
             if (doctor.DocPhoto != null)

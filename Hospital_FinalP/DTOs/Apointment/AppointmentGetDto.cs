@@ -18,8 +18,8 @@ namespace Hospital_FinalP.DTOs.Apointment
         public string PatientFullName { get; set; }
         public string DoctorFullName { get; set; }
 
-        public List<DoctorGetDto> Doctor { get; set; }
-        public List<PatientGetDto> Patient { get; set; }
+        public DoctorGetDto Doctor { get; set; }
+        public PatientGetDto Patient { get; set; }
 
         public string Description { get; set; } //reason sympoms
     }

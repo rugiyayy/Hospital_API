@@ -56,6 +56,7 @@ namespace Hospital_FinalP
                     ValidateIssuerSigningKey = true,
                     ClockSkew = TimeSpan.Zero,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
+
                 };
             });
 
@@ -73,6 +74,7 @@ namespace Hospital_FinalP
                                   {
                                       policy.WithOrigins("http://localhost:3000")
                                       .AllowAnyMethod()
+                                      .AllowAnyHeader()
                                       .AllowAnyHeader()
                                       .AllowAnyOrigin();
                                   });

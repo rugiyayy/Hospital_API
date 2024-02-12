@@ -39,13 +39,8 @@ namespace Hospital_FinalP.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            if (_context.Patients == null) return NotFound();
-
-            var patient = _context.Patients
-                .FirstOrDefault(x => x.Id == id);
-
-
-            if (patient is null) return NotFound();
+            var patient = _context.Patients.FirstOrDefault(x => x.Id == id);
+            if (patient is null) return NotFound("Patient not found");
 
             var dto = new PatientGetDto();
             _mapper.Map(patient, dto);
@@ -53,13 +48,12 @@ namespace Hospital_FinalP.Controllers
             return Ok(dto);
         }
 
-        [HttpPost("SignIn")]
+        [HttpPost("SignUp")]//register patient
         public async Task<IActionResult> Post([FromForm] PatientPostDto dto, [FromServices] UserManager<AppUser> userManager)
         {
             var existingPatient = _context.Patients
                     .AsEnumerable()
-                    .FirstOrDefault(d => d.IdentityNumber.Trim().Equals(dto.IdentityNumber.Trim(), StringComparison.OrdinalIgnoreCase));
-
+                      .FirstOrDefault(d => d.PatientIdentityNumber.Trim().Equals(dto.PatientIdentityNumber.Trim(), StringComparison.OrdinalIgnoreCase));
 
             if (existingPatient != null)
             {
@@ -69,7 +63,7 @@ namespace Hospital_FinalP.Controllers
 
 
             var existingEmail = _context.Patients
-                .Where(dd => dd.IdentityNumber != dto.IdentityNumber)
+                .Where(dd => dd.PatientIdentityNumber != dto.PatientIdentityNumber)
                 .AsEnumerable()
                 .FirstOrDefault(d => d.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase));
 
@@ -103,19 +97,19 @@ namespace Hospital_FinalP.Controllers
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromForm] PatientPutDto dto)
         {
-            var existingPatient = _context.Patients
-        .AsEnumerable()
-        .FirstOrDefault(d =>
-            d.Id != id &&
-            d.IdentityNumber.Trim().Equals(dto.IdentityNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+            var patient = _context.Patients.FirstOrDefault(x => x.Id == id);
+            if (patient is null) return NotFound("Patient not found");
 
-            if (existingPatient != null)
+            var existingPhoneNumber = _context.Patients
+       .Where(dd => dd.Id != id)
+       .AsEnumerable()
+       .FirstOrDefault(d => d.PhoneNumber.Equals(dto.PhoneNumber, StringComparison.OrdinalIgnoreCase));
+
+            if (existingPhoneNumber != null)
             {
-
-                return BadRequest("Patient already exists. Log in , PLease ");
+                return BadRequest($"Phone number {dto.PhoneNumber} is already associated with another patient.");
             }
 
-    
 
             var existingEmail = _context.Patients
                 .Where(dd => dd.Id != id)
@@ -126,19 +120,12 @@ namespace Hospital_FinalP.Controllers
             {
                 return BadRequest($"Email {dto.Email} is already associated with another patient.");
             }
-            var patient = _context.Patients;
 
-
-            if (patient is null) return NotFound();
 
             _mapper.Map(dto, patient);
-
-
-
             _context.SaveChanges();
 
-
-            return Ok();
+            return Ok(patient.Id);
 
         }
 
@@ -147,7 +134,7 @@ namespace Hospital_FinalP.Controllers
         {
 
             var patient = _context.Patients.FirstOrDefault(x => x.Id == id);
-            if (patient is null) return NotFound();
+            if (patient is null) return NotFound("Patient Not Found");
 
             _context.Remove(patient);
             _context.SaveChanges();

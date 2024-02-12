@@ -12,4 +12,8 @@ namespace Hospital_FinalP.DTOs.Apointment
         public int PatientId { get; set; }
         public string Description { get; set; } //reason sympoms
     }
+
+
+
+   
 }

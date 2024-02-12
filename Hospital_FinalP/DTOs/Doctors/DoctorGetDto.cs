@@ -22,6 +22,7 @@ namespace Hospital_FinalP.DTOs.Doctors
         //public int PageCount { get; set; }
         //public int TakePerPage { get; set; }
         public DocPhotoGetDto DocPhoto { get; set; }
+
         public int MaxAppointments { get; set; } 
        
         public DoctorDetailGetDto DoctorDetail { get; set; }

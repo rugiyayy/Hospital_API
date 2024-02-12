@@ -24,14 +24,20 @@ namespace Hospital_FinalP.Data
         public DbSet<ExaminationRoom> ExaminationRooms { get; set; }
         public DbSet<Patient> Patients { get; set; }
         public DbSet<DoctorType> DoctorTypes { get; set; }
+        public DbSet<WorkingDay> WorkingDays { get; set; }
 
         
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //modelBuilder.Entity<Order>()
             //    .Property(p => p.Status)
             //    .HasConversion<string>();
 
+            modelBuilder.Entity<WorkingSchedule>()
+        .HasOne(ws => ws.Doctor) 
+        .WithOne(d => d.WorkingSchedule) 
+        .HasForeignKey<WorkingSchedule>(ws => ws.DoctorId); 
 
             base.OnModelCreating(modelBuilder);
         }

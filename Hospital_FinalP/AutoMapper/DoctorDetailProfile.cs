@@ -9,8 +9,8 @@ namespace Hospital_FinalP.AutoMapper
     {
         public DoctorDetailProfile()
         {
-            CreateMap<DoctorDetail, DoctorDetailGetDto>();
-            CreateMap<DoctorDetailPostDto, DoctorDetail>().ReverseMap();
+            CreateMap<DoctorDetail, DoctorDetailGetDto>().ReverseMap();
+            CreateMap<DoctorDetailPostDto, DoctorDetail>();
             CreateMap<DoctorDetailPutDto, DoctorDetail>();
 
         }

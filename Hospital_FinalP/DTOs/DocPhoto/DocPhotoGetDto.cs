@@ -4,4 +4,5 @@
     {
         public string PhotoPath { get; set; }
     }
+
 }

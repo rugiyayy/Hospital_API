@@ -11,7 +11,7 @@ namespace Hospital_FinalP.Data
 
             #region Roles
 
-            var roles = new string[] { "Admin", "Appointment Scheduler","Doctor", "Patient" };
+            var roles = new string[] { "Admin", "Scheduler","Doctor", "Patient" };
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             foreach (var role in roles)
             {

@@ -9,7 +9,7 @@ namespace Hospital_FinalP.AutoMapper
     {
         public PatientProfile()
         {
-            CreateMap<Patient, PatientGetDto>();
+            CreateMap<Patient, PatientGetDto>().ReverseMap();
             CreateMap<PatientPostDto, Patient>();
             CreateMap<PatientPutDto, Patient>();
 

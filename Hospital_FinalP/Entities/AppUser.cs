@@ -7,4 +7,7 @@ namespace Hospital_FinalP.Entities
         public string FullName { get; set; }
 
     }
+
+
+
 }

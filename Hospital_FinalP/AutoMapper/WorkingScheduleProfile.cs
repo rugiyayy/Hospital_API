@@ -10,8 +10,18 @@ namespace Hospital_FinalP.AutoMapper
         {
             CreateMap<WorkingSchedule, WorkingScheduleGetDto>();
             CreateMap<WorkingSchedulePostDto, WorkingSchedule>();
-            CreateMap<WorkingSchedulePutDto, WorkingSchedule>();
 
+
+        }
+    }
+
+
+    public class WorkingDayProfile : Profile
+    {
+        public WorkingDayProfile()
+        {
+            CreateMap<WorkingDay, WorkingDayGetDto>();
+            CreateMap<WorkingDayPostDto, WorkingDay>();
         }
     }
 }

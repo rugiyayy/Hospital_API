@@ -8,10 +8,9 @@ namespace Hospital_FinalP.AutoMapper
     {
         public ExaminationRoomProfile()
         {
-            CreateMap<ExaminationRoom, ExaminationRoomGetDto>();
+            CreateMap<ExaminationRoom, ExaminationRoomGetDto>().ReverseMap();
             CreateMap<ExaminationRoomPostDto,ExaminationRoom>();
             CreateMap<ExaminationRoomPutDto, ExaminationRoom>();
-            CreateMap<ExaminationRoom, ExaminationRoomPostDto>().ReverseMap();
 
         }
     }

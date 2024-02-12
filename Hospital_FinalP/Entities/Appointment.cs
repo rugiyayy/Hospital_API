@@ -20,11 +20,15 @@ namespace Hospital_FinalP.Entities
         public Patient Patient { get; set; }
         public string Description { get; set; }
 
+
+
+
+
         //public Appointment()
         //{
         //    Duration = TimeSpan.FromMinutes(30);
         //}
 
-        
+
     }
 }

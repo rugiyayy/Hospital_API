@@ -10,7 +10,7 @@ namespace Hospital_FinalP.DTOs.Patients
         public string FullName { get; set; }
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
-        public string IdentityNumber { get; set; }//ID(FIN)
+        public string PatientIdentityNumber { get; set; }//ID(FIN)
         public DateTime BirthDate { get; set; }
         public string Password { get; set; }
         //public List<AppointmentPutDto> Appointments { get; set; }

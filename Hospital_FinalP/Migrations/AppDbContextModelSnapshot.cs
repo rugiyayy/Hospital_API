@@ -322,7 +322,7 @@ namespace Hospital_FinalP.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("IdentityNumber")
+                    b.Property<string>("PatientIdentityNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -357,7 +357,7 @@ namespace Hospital_FinalP.Migrations
                     b.ToTable("Symptom");
                 });
 
-            modelBuilder.Entity("Hospital_FinalP.Entities.WorkingSchedule", b =>
+            modelBuilder.Entity("Hospital_FinalP.Entities.WorkingDay", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -367,6 +367,24 @@ namespace Hospital_FinalP.Migrations
 
                     b.Property<int>("DayOfWeek")
                         .HasColumnType("int");
+
+                    b.Property<int>("WorkingScheduleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WorkingScheduleId");
+
+                    b.ToTable("WorkingDays");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.WorkingSchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("DoctorId")
                         .HasColumnType("int");
@@ -611,6 +629,17 @@ namespace Hospital_FinalP.Migrations
                     b.Navigation("Disease");
                 });
 
+            modelBuilder.Entity("Hospital_FinalP.Entities.WorkingDay", b =>
+                {
+                    b.HasOne("Hospital_FinalP.Entities.WorkingSchedule", "WorkingSchedule")
+                        .WithMany("WorkingDays")
+                        .HasForeignKey("WorkingScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WorkingSchedule");
+                });
+
             modelBuilder.Entity("Hospital_FinalP.Entities.WorkingSchedule", b =>
                 {
                     b.HasOne("Hospital_FinalP.Entities.Doctor", "Doctor")
@@ -709,6 +738,11 @@ namespace Hospital_FinalP.Migrations
             modelBuilder.Entity("Hospital_FinalP.Entities.Patient", b =>
                 {
                     b.Navigation("Appointments");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.WorkingSchedule", b =>
+                {
+                    b.Navigation("WorkingDays");
                 });
 #pragma warning restore 612, 618
         }

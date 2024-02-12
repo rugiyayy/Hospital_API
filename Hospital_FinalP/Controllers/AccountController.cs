@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.Account;
 using Hospital_FinalP.Entities;
 using Hospital_FinalP.Services.Abstract;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Hospital_FinalP.Controllers
 {
@@ -13,13 +15,15 @@ namespace Hospital_FinalP.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
+        private readonly AppDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
 
 
 
-        public AccountController(UserManager<AppUser> userManager, IMapper mapper)
+        public AccountController(AppDbContext context, UserManager<AppUser> userManager, IMapper mapper)
         {
+            _context = context;
             _userManager = userManager;
             _mapper = mapper;
         }
@@ -34,7 +38,20 @@ namespace Hospital_FinalP.Controllers
             }
 
             var roles = (await _userManager.GetRolesAsync(user)).ToList();
-            var token = jwtTokenService.GenerateToken(user.FullName, user.UserName, roles);
+            var isPatient = roles.Contains("Patient");
+            int? patientId = null;
+
+            if (isPatient)
+            {
+                // Retrieve the patient information
+                var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == user.Email);
+                if (patient != null)
+                {
+                    // Assign patient ID
+                    patientId = patient.Id;
+                }
+            }
+            var token = jwtTokenService.GenerateToken( user.FullName, user.UserName, roles, patientId);
             return Ok(token);
         }
 
@@ -54,7 +71,7 @@ namespace Hospital_FinalP.Controllers
                 }
                 else
                 {
-                    await _userManager.AddToRoleAsync(userEntity, "Appointment Scheduler");
+                    await _userManager.AddToRoleAsync(userEntity, "Scheduler");
                 }
 
                 return Ok("Account created successfully");

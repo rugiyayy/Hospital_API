@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
+using System.Linq;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -32,13 +33,28 @@ namespace Hospital_FinalP.Controllers
         public async Task<IActionResult> GetAllAppointments()
         {
             var appointments = await _context.Appointments
-        .Include(a => a.Doctor)
-        .Include(a => a.Patient)
-        .ToListAsync();
+         .Include(a => a.Doctor)
+         .Include(a => a.Patient)
+         .ToListAsync();
 
-            var appointmentDtos = _mapper.Map<List<AppointmentGetDto>>(appointments);
-            return Ok(appointmentDtos);
+         
+            return Ok(appointments);
+
         }
+
+        [HttpGet("patients/{patientId}/appointments")]
+        public async Task<IActionResult> GetAppointmentsForPatient(int patientId)
+        {
+            var appointmentsForPatient = await _context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Patient)
+                .Where(a => a.PatientId == patientId)
+                .ToListAsync();
+
+            return Ok(appointmentsForPatient);
+        }
+
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAppointment(int id)
@@ -56,10 +72,14 @@ namespace Hospital_FinalP.Controllers
         }
 
 
-        //[Authorize(Roles = "Patient, Receptionist")]
+        [Authorize(Roles = "Patient, Scheduler")]
         [HttpPost]
-        public async Task<IActionResult> ScheduleAppointment([FromBody] AppointmentPostDto dto)
+        public async Task<IActionResult> ScheduleAppointment([FromForm] AppointmentPostDto dto)
         {
+            if (dto.StartTime.Date == DateTime.Today)
+            {
+                return BadRequest("Booking for today is not allowed.");
+            }
             var doctor = await _context.Doctors
                 .Include(d => d.WorkingSchedule)
                  .FirstOrDefaultAsync(d => d.Id == dto.DoctorId);
@@ -134,13 +154,12 @@ namespace Hospital_FinalP.Controllers
 
             DateTime currentDateTimeUtc = DateTime.UtcNow;
 
-            // Конвертируем выбранное время приема из UTC в местное время (с учетом смещения)
-            DateTime selectedDateTimeLocal = dto.StartTime.ToLocalTime();
+            DateTime currentDateTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.Local);
 
-            // Проверяем, если выбранное время приема меньше текущего времени
-            if (selectedDateTimeLocal < currentDateTimeUtc)
+            // Проверяем, если выбранное время приема меньше текущего местного времени
+            if (dto.StartTime < currentDateTimeLocal)
             {
-                // Возвращаем ошибку, если выбранное время приема меньше текущего времени
+                // Возвращаем ошибку, если выбранное время приема меньше текущего местного времени
                 return BadRequest("Appointment time cannot be in the past.");
             }
 
@@ -178,11 +197,15 @@ namespace Hospital_FinalP.Controllers
             if (doctor.WorkingSchedule == null)
                 return BadRequest("WorkingSchedule is not set.");
 
-            var patient = await _context.Patients.FindAsync(dto.PatientId);
-            if (patient == null)
-                return NotFound("Patient not found.");
 
+            DateTime currentDateTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.Local);
 
+            // Проверяем, если новое время приема меньше текущего местного времени
+            if (dto.StartTime < currentDateTimeLocal)
+            {
+                // Возвращаем ошибку, если новое время приема меньше текущего местного времени
+                return BadRequest("Appointment time cannot be in the past.");
+            }
 
             TimeSpan duration = TimeSpan.FromMinutes(30);
 
@@ -212,7 +235,7 @@ namespace Hospital_FinalP.Controllers
 
 
             var existingPatientAppointment = await _context.Appointments
-                .FirstOrDefaultAsync(a => a.PatientId == dto.PatientId && a.StartTime == dto.StartTime && a.Id != id);
+                .FirstOrDefaultAsync(a => a.StartTime == dto.StartTime && a.Id != id);
 
             if (existingPatientAppointment != null)
             {
@@ -271,27 +294,50 @@ namespace Hospital_FinalP.Controllers
 
 
 
-
+        [Authorize(Roles = "Appointment Scheduler,Admin,Patient")]
 
 
         [HttpGet("AvailableTimeSlots")]
-        public IActionResult GetAvailableTimeSlots(DateTime selectedDate, int doctorId)
+        public IActionResult GetAvailableTimeSlots(string selectedDate, int doctorId)
         {
-            // Получение рабочего расписания врача для выбранного дня
-            var workingSchedule = _context.WorkingSchedules.FirstOrDefault(ws => ws.DoctorId == doctorId && ws.DayOfWeek == selectedDate.DayOfWeek);
+            // Parse the selectedDate string into a DateTime object
+            if (!DateTime.TryParse(selectedDate, out DateTime parsedDate))
+            {
+                return BadRequest("Invalid date format. Please provide the date in YYYY-MM-DD format.");
+            }
+
+            DateTime currentDateTime = DateTime.UtcNow;
+            DateTime lastDateAllowed = currentDateTime.AddDays(30);
+
+            if (parsedDate < currentDateTime || parsedDate > lastDateAllowed)
+            {
+                return BadRequest("Selected date must be within the next 30 days from today.");
+            }
+
+
+            var workingSchedule = _context.WorkingSchedules
+        .Include(ws => ws.WorkingDays)
+        .FirstOrDefault(ws => ws.DoctorId == doctorId);
+
 
             if (workingSchedule == null)
             {
-                return BadRequest("Working schedule not found for the specified doctor and day.");
+                return BadRequest("Working schedule not found for the specified doctor.");
             }
 
-            // Генерация временных слотов
-            TimeSpan interval = new TimeSpan(0, 30, 0); // Интервал в 30 минут
-            List<DateTime> timeSlots = GenerateTimeSlots(selectedDate, workingSchedule.StartTime, workingSchedule.EndTime, interval);
+            var parsedDayOfWeek = parsedDate.DayOfWeek;
+            var isWorkingDay = workingSchedule.WorkingDays.Any(wd => wd.DayOfWeek == parsedDayOfWeek);
 
-            // Проверка и исключение занятых временных слотов
+            if (!isWorkingDay)
+            {
+                return BadRequest("Working schedule not found for the specified day.");
+            }
+
+            TimeSpan interval = new TimeSpan(0, 30, 0); // Interval of 30 minutes
+            List<DateTime> timeSlots = GenerateTimeSlots(parsedDate, workingSchedule.StartTime, workingSchedule.EndTime, interval);
+
             var occupiedTimeSlots = _context.Appointments
-                .Where(a => a.DoctorId == doctorId && a.StartTime.Date == selectedDate.Date)
+                .Where(a => a.DoctorId == doctorId && a.StartTime.Date == parsedDate.Date)
                 .Select(a => a.StartTime.TimeOfDay)
                 .ToList();
 
@@ -304,7 +350,7 @@ namespace Hospital_FinalP.Controllers
             return Ok(formattedTimeSlots);
         }
 
-        // Метод для генерации временных слотов в указанный день с заданным интервалом
+
         private List<DateTime> GenerateTimeSlots(DateTime selectedDate, TimeSpan startTime, TimeSpan endTime, TimeSpan interval)
         {
             List<DateTime> timeSlots = new List<DateTime>();

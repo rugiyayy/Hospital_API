@@ -10,7 +10,7 @@ namespace Hospital_FinalP.AutoMapper
         public AppointmentProfile()
         {
             CreateMap<Appointment, AppointmentGetDto>();
-            CreateMap<AppointmentPostDto, Appointment>().ReverseMap();
+            CreateMap<AppointmentPostDto, Appointment>();
             CreateMap<AppointmentPutDto, Appointment>();
         }
     }
