@@ -72,7 +72,7 @@ namespace Hospital_FinalP
                 options.AddDefaultPolicy(
                                   policy =>
                                   {
-                                      policy.WithOrigins("http://localhost:3000")
+                                      policy.WithOrigins("http://localhost:3001")
                                       .AllowAnyMethod()
                                       .AllowAnyHeader()
                                       .AllowAnyHeader()
@@ -81,11 +81,20 @@ namespace Hospital_FinalP
             });
 
             //for validators
-            builder.Services.AddFluentValidationAutoValidation()
-                .AddFluentValidationClientsideAdapters()
-                .AddValidatorsFromAssemblyContaining(typeof(Program));
+            //builder.Services.AddFluentValidationAutoValidation()
+            //    .AddFluentValidationClientsideAdapters()
+            //    .AddValidatorsFromAssemblyContaining(typeof(Program));
 
-
+            builder.Services.Configure<ApiBehaviorOptions>(apiBehaviorOptions => {
+                apiBehaviorOptions.InvalidModelStateResponseFactory = actionContext => {
+                    var pd = new ProblemDetails();
+                    pd.Type = apiBehaviorOptions.ClientErrorMapping[400].Link;
+                    pd.Title = apiBehaviorOptions.ClientErrorMapping[400].Title;
+                    pd.Status = 400;
+                    pd.Extensions.Add("traceId", actionContext.HttpContext.TraceIdentifier);
+                    return new BadRequestObjectResult(pd);
+                };
+            });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

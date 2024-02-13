@@ -48,8 +48,8 @@ namespace Hospital_FinalP.Controllers
             return Ok(dto);
         }
 
-        [HttpPost("SignUp")]//register patient
-        public async Task<IActionResult> Post([FromForm] PatientPostDto dto, [FromServices] UserManager<AppUser> userManager)
+        [HttpPost]//register patient
+        public async Task<IActionResult> PatientSignUp([FromBody] PatientPostDto dto, [FromServices] UserManager<AppUser> userManager)
         {
             var existingPatient = _context.Patients
                     .AsEnumerable()

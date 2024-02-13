@@ -4,6 +4,7 @@ namespace Hospital_FinalP.Entities
 {
     public class Appointment
     {
+
         public int Id { get; set; }
         public DateTime StartTime { get; set; }
 
@@ -21,7 +22,7 @@ namespace Hospital_FinalP.Entities
         public string Description { get; set; }
 
 
-
+        public bool IsActive { get; set; }
 
 
         //public Appointment()

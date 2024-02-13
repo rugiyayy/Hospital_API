@@ -56,7 +56,8 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPost("SignUp")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin,Patient")]
+        
         public async Task<IActionResult> SignUp([FromBody] SignUpDto dto)
         {
             var userEntity = _mapper.Map<AppUser>(dto);

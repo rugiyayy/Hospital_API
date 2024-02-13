@@ -18,9 +18,11 @@ namespace Hospital_FinalP.DTOs.Apointment
         public string PatientFullName { get; set; }
         public string DoctorFullName { get; set; }
 
+        public bool IsActive { get; set; }
         public DoctorGetDto Doctor { get; set; }
         public PatientGetDto Patient { get; set; }
-
+        public string FormattedStartTime => StartTime.ToString("dd-MM-yyyy HH:mm");
+        public string FormattedEndTime => EndTime.ToString("dd-MM-yyyy HH:mm");
         public string Description { get; set; } //reason sympoms
     }
 }
