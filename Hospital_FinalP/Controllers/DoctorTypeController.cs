@@ -22,7 +22,7 @@ namespace Hospital_FinalP.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromQuery(Name = "_page")] int? page, [FromQuery(Name = "_perPage")] int? perPage)
         {
             if (_context.DoctorTypes == null) return NotFound();
 

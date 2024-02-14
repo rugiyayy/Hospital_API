@@ -3,6 +3,7 @@ using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.Apointment;
 using Hospital_FinalP.DTOs.Department;
 using Hospital_FinalP.Entities;
+using Hospital_FinalP.Migrations;
 using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -48,13 +49,14 @@ namespace Hospital_FinalP.Controllers
         [HttpGet("patients/{patientId}")]
         public async Task<IActionResult> GetAppointmentsForPatient(int patientId, [FromQuery(Name = "_page")] int? page, [FromQuery(Name = "_perPage")] int? perPage)
         {
+            if (_context.Appointments == null) return NotFound();
+
             IQueryable<Appointment> appointmentsQuery = _context.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.Patient)
                 .Where(a => a.PatientId == patientId)
                 .OrderBy(a => a.StartTime);
 
-            // If perPage is not provided, return all appointments
             if (!perPage.HasValue || perPage <= 0)
             {
                 var allAppointments = await appointmentsQuery
@@ -64,11 +66,9 @@ namespace Hospital_FinalP.Controllers
                 return Ok(allAppointments);
             }
 
-            // Default page number to 1 if not provided or less than 1
             if (!page.HasValue || page < 1)
                 page = 1;
 
-            // Calculate total appointments count
             int totalAppointments = await appointmentsQuery.CountAsync();
 
             int totalPages = (int)Math.Ceiling((double)totalAppointments / perPage.Value);
@@ -305,18 +305,21 @@ namespace Hospital_FinalP.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAppointment(int doctorId, int appointmentId)
-        {
-            var doctor = await _context.Doctors.Include(d => d.Appointments).FirstOrDefaultAsync(d => d.Id == doctorId);
-            if (doctor == null)
-                return NotFound("Doctor not found.");
 
-            var appointment = doctor.Appointments.FirstOrDefault(a => a.Id == appointmentId);
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAppointment( int id)
+        {
+            //var doctor = await _context.Doctors.Include(d => d.Appointments).FirstOrDefaultAsync(d => d.Id == doctorId);
+            //if (doctor == null)
+            //    return NotFound("Doctor not found.");
+
+            var appointment = _context.Appointments.FirstOrDefault(a => a.Id == id);
             if (appointment == null)
                 return NotFound("Appointment not found.");
 
-            doctor.Appointments.Remove(appointment);
+         
+            _context.Remove(appointment);
             await _context.SaveChangesAsync();
 
             return Ok();

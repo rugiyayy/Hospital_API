@@ -62,7 +62,10 @@ namespace Hospital_FinalP.Controllers
         {
             var userEntity = _mapper.Map<AppUser>(dto);
 
-            var result = await _userManager.CreateAsync(userEntity, dto.Password);
+
+
+
+            var result = await _userManager.CreateAsync(userEntity,dto.Password);
 
             if (result.Succeeded)
             {
