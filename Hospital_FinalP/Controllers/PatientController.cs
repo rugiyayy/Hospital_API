@@ -57,9 +57,8 @@ namespace Hospital_FinalP.Controllers
 
             if (existingPatient != null)
             {
-                return Conflict("Patient already exists.Log in please");
+                return Conflict("Patient already has an account.");
             }
-
 
 
             var existingEmail = _context.Patients
@@ -67,15 +66,27 @@ namespace Hospital_FinalP.Controllers
                 .AsEnumerable()
                 .FirstOrDefault(d => d.Email.Equals(dto.Email, StringComparison.OrdinalIgnoreCase));
 
+
             if (existingEmail != null)
             {
                 return BadRequest($"Email {dto.Email} is already associated with another patient.");
             }
 
-            var patientEntity = _mapper.Map<Patient>(dto);
-            _context.Add(patientEntity);
 
-            _context.SaveChanges();
+            var existingNumber = _context.Patients
+                 .Where(dd => dd.PatientIdentityNumber != dto.PatientIdentityNumber)
+              .AsEnumerable()
+             .FirstOrDefault(d => d.PhoneNumber.Trim().Equals(dto.PhoneNumber.Trim(), StringComparison.OrdinalIgnoreCase));
+
+            if (existingNumber != null)
+            {
+                return Conflict($" Phone number {dto.PhoneNumber} is already associated with another patient");
+            }
+
+
+
+            var patientEntity = _mapper.Map<Patient>(dto);
+           
 
 
             var patientUser = new AppUser { UserName = dto.Email, Email = dto.Email, FullName = dto.FullName };
@@ -83,7 +94,10 @@ namespace Hospital_FinalP.Controllers
 
             if (result.Succeeded)
             {
+                _context.Add(patientEntity);
+                _context.SaveChanges();
                 await userManager.AddToRoleAsync(patientUser, "Patient");
+
             }
             else
             {
@@ -95,7 +109,7 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromForm] PatientPutDto dto)
+        public IActionResult Update(int id, [FromBody] PatientPutDto dto)
         {
             var patient = _context.Patients.FirstOrDefault(x => x.Id == id);
             if (patient is null) return NotFound("Patient not found");
@@ -109,7 +123,7 @@ namespace Hospital_FinalP.Controllers
             {
                 return BadRequest($"Phone number {dto.PhoneNumber} is already associated with another patient.");
             }
-
+    
 
             var existingEmail = _context.Patients
                 .Where(dd => dd.Id != id)
@@ -128,6 +142,8 @@ namespace Hospital_FinalP.Controllers
             return Ok(patient.Id);
 
         }
+
+
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)

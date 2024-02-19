@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using System.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -32,19 +33,63 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAppointments()
+        public async Task<IActionResult> GetAllAppointments(int? page,int? perPage,string doctorName = null,bool? isActive = null, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var appointments = await _context.Appointments
-         .Include(a => a.Doctor)
-         .Include(a => a.Patient)
-          .Select(x => _mapper.Map(x, new AppointmentGetDto()))
+            IQueryable<Appointment> query = _context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Patient);
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(a => a.IsActive == isActive.Value);
+            }
+
+            if (!string.IsNullOrEmpty(doctorName))
+            {
+                query = query.Where(a => a.Doctor.FullName.Contains(doctorName));
+            }
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                query = query.Where(a => a.StartTime.Date >= startDate.Value.Date && a.EndTime.Date <= endDate.Value.Date);
+            }
+            else if (startDate.HasValue)
+            {
+                query = query.Where(a => a.StartTime.Date >= startDate.Value.Date);     
+            }
+            else if (endDate.HasValue)
+            {
+                query = query.Where(a => a.EndTime.Date <= endDate.Value.Date);
+            }
+
+            int totalCount = await query.CountAsync();
+
+            if (page.HasValue && perPage.HasValue)
+            {
+                int currentPage = page.Value > 0 ? page.Value : 1;
+                int itemsPerPage = perPage.Value > 0 ? perPage.Value : 10;
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+                currentPage = currentPage > totalPages ? totalPages : currentPage;
+
+                int skip = Math.Max((currentPage - 1) * itemsPerPage, 0);
+
+                query = query.OrderBy(a => a.StartTime).Skip(skip).Take(itemsPerPage);
+            }
+            else
+            {
+                query = query.OrderBy(a => a.StartTime);
+            }
+
+
+            var appointments = await query
+                .Select(x => _mapper.Map(x, new AppointmentGetDto()))
                 .AsNoTracking()
-         .ToListAsync();
+                .ToListAsync();
 
-
-            return Ok(appointments);
-
+            return Ok(new { totalCount, appointments });
         }
+
+
 
         [HttpGet("patients/{patientId}")]
         public async Task<IActionResult> GetAppointmentsForPatient(int patientId, [FromQuery(Name = "_page")] int? page, [FromQuery(Name = "_perPage")] int? perPage)
@@ -86,6 +131,77 @@ namespace Hospital_FinalP.Controllers
 
 
 
+
+        [HttpGet("doctors/{doctorId}")]
+        public async Task<IActionResult> GetAppointmentsForDoctor(int doctorId,int? page, int? perPage, bool? isActive = null, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            if (_context.Appointments == null) return NotFound();
+
+            IQueryable<Appointment> appointmentsQuery = _context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Patient)
+                .Where(a => a.DoctorId == doctorId)
+                .OrderBy(a => a.StartTime);
+
+
+
+            if (isActive.HasValue)
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.IsActive == isActive.Value);
+            }
+
+          
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.StartTime.Date >= startDate.Value.Date && a.EndTime.Date <= endDate.Value.Date);
+            }
+            else if (startDate.HasValue)
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.StartTime.Date >= startDate.Value.Date);
+            }
+            else if (endDate.HasValue)
+            {
+                appointmentsQuery = appointmentsQuery.Where(a => a.EndTime.Date <= endDate.Value.Date);
+            }
+
+
+
+
+
+
+            int totalCount = await appointmentsQuery.CountAsync();
+
+            if (page.HasValue && perPage.HasValue)
+            {
+                int currentPage = page.Value > 0 ? page.Value : 1;
+                int itemsPerPage = perPage.Value > 0 ? perPage.Value : 10;
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+                currentPage = currentPage > totalPages ? totalPages : currentPage;
+
+                int skip = Math.Max((currentPage - 1) * itemsPerPage, 0);
+
+                appointmentsQuery = appointmentsQuery.OrderBy(a => a.StartTime).Skip(skip).Take(itemsPerPage);
+            }
+            else
+            {
+                appointmentsQuery = appointmentsQuery.OrderBy(a => a.StartTime);
+            }
+
+
+            var appointments = await appointmentsQuery
+                .Select(x => _mapper.Map(x, new AppointmentGetDto()))
+                .AsNoTracking()
+                .ToListAsync();
+
+
+
+            return Ok(new { appointments, totalCount });
+        }
+
+
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAppointment(int id)
         {
@@ -103,7 +219,7 @@ namespace Hospital_FinalP.Controllers
             appointmentDto.IsActive = isActive;
 
 
-           
+
             return Ok(appointmentDto);
         }
 
@@ -132,7 +248,7 @@ namespace Hospital_FinalP.Controllers
 
             var patient = await _context.Patients.FindAsync(dto.PatientId);
             if (patient == null) return NotFound("Patient not found.");
-           
+
 
 
             TimeSpan duration = TimeSpan.FromMinutes(30);
@@ -145,7 +261,7 @@ namespace Hospital_FinalP.Controllers
 
 
             if (dto.StartTime.Minute % 30 != 0) return BadRequest("Appointment start time should be at intervals of 30 minutes.");
-           
+
 
 
             //var existingAppointments = await _context.Appointments
@@ -174,14 +290,14 @@ namespace Hospital_FinalP.Controllers
                                    a.StartTime == dto.StartTime);
 
             if (existingDoctorAppointment != null) return Conflict("Doctor already has an appointment at the specified time.");
-          
+
 
             var currentDateTimeUtc = DateTime.UtcNow;
 
             DateTime currentDateTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(currentDateTimeUtc, TimeZoneInfo.Local);
 
             if (dto.StartTime < currentDateTimeLocal) return BadRequest("Appointment time cannot be in the past.");
-           
+
 
 
             var appointment = new Appointment
@@ -199,7 +315,7 @@ namespace Hospital_FinalP.Controllers
             return Ok(appointment);
 
         }
-        
+
 
 
 
@@ -237,7 +353,7 @@ namespace Hospital_FinalP.Controllers
             DateTime currentDateTimeLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.Local);
 
             if (dto.StartTime < currentDateTimeLocal)
-            return BadRequest("Appointment time cannot be in the past.");
+                return BadRequest("Appointment time cannot be in the past.");
 
             TimeSpan duration = TimeSpan.FromMinutes(30);
 
@@ -248,7 +364,7 @@ namespace Hospital_FinalP.Controllers
             }
 
             if (dto.StartTime.Minute % 30 != 0)
-            return BadRequest("Appointment start time should be at intervals of 30 minutes.");
+                return BadRequest("Appointment start time should be at intervals of 30 minutes.");
 
 
 
@@ -308,7 +424,7 @@ namespace Hospital_FinalP.Controllers
 
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAppointment( int id)
+        public async Task<IActionResult> DeleteAppointment(int id)
         {
             //var doctor = await _context.Doctors.Include(d => d.Appointments).FirstOrDefaultAsync(d => d.Id == doctorId);
             //if (doctor == null)
@@ -318,7 +434,7 @@ namespace Hospital_FinalP.Controllers
             if (appointment == null)
                 return NotFound("Appointment not found.");
 
-         
+
             _context.Remove(appointment);
             await _context.SaveChangesAsync();
 
@@ -345,13 +461,13 @@ namespace Hospital_FinalP.Controllers
         public IActionResult GetAvailableTimeSlots(string selectedDate, int doctorId)
         {
             if (!DateTime.TryParse(selectedDate, out DateTime parsedDate))
-            return BadRequest("Invalid date format. Please provide the date in YYYY-MM-DD format.");
+                return BadRequest("Invalid date format. Please provide the date in YYYY-MM-DD format.");
 
             DateTime currentDateTime = DateTime.UtcNow;
             DateTime lastDateAllowed = currentDateTime.AddDays(30);
 
             if (parsedDate < currentDateTime || parsedDate > lastDateAllowed)
-            return BadRequest("Selected date must be within the next 30 days from today.");
+                return BadRequest("Selected date must be within the next 30 days from today.");
 
 
             var workingSchedule = _context.WorkingSchedules
@@ -360,13 +476,13 @@ namespace Hospital_FinalP.Controllers
 
 
             if (workingSchedule == null)
-            return BadRequest("Working schedule not found for the specified doctor.");
+                return BadRequest("Working schedule not found for the specified doctor.");
 
             var parsedDayOfWeek = parsedDate.DayOfWeek;
             var isWorkingDay = workingSchedule.WorkingDays.Any(wd => wd.DayOfWeek == parsedDayOfWeek);
 
             if (!isWorkingDay)
-            return BadRequest("Working schedule not found for the specified day.");
+                return BadRequest("Working schedule not found for the specified day.");
 
             TimeSpan interval = new TimeSpan(0, 30, 0); // Interval of 30 minutes
             List<DateTime> timeSlots = GenerateTimeSlots(parsedDate, workingSchedule.StartTime, workingSchedule.EndTime, interval);

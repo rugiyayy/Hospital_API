@@ -3,8 +3,10 @@ using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.Account;
 using Hospital_FinalP.Entities;
 using Hospital_FinalP.Services.Abstract;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +30,25 @@ namespace Hospital_FinalP.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("GetUsersByRole")]
+        public async Task<IActionResult> GetUsersByRole()
+        {
+            var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
+            var schedulerUsers = await _userManager.GetUsersInRoleAsync("Scheduler");
+
+            var adminUserDtos = _mapper.Map<List<UserDto>>(adminUsers);
+            var schedulerUserDtos = _mapper.Map<List<UserDto>>(schedulerUsers);
+
+            var usersByRole = new
+            {
+                AdminUsers = adminUserDtos,
+                SchedulerUsers = schedulerUserDtos
+            };
+
+            return Ok(usersByRole);
+        }
+
+
         [HttpPost("SignIn")]
         public async Task<IActionResult> SignIn([FromBody] SignInDto dto, [FromServices] IJwtTokenService jwtTokenService)
         {
@@ -40,18 +61,27 @@ namespace Hospital_FinalP.Controllers
             var roles = (await _userManager.GetRolesAsync(user)).ToList();
             var isPatient = roles.Contains("Patient");
             int? patientId = null;
+            var isDoctor = roles.Contains("Doctor");
+            int? doctorId = null;
 
             if (isPatient)
             {
-                // Retrieve the patient information
                 var patient = await _context.Patients.FirstOrDefaultAsync(p => p.Email == user.Email);
                 if (patient != null)
                 {
-                    // Assign patient ID
                     patientId = patient.Id;
                 }
             }
-            var token = jwtTokenService.GenerateToken( user.FullName, user.UserName, roles, patientId);
+
+            if (isDoctor)
+            {
+                var doctor = await _context.Doctors.FirstOrDefaultAsync(d => d.DoctorDetail.Email == user.Email);
+                if (doctor != null)
+                {
+                    doctorId = doctor.Id;
+                }
+            }
+            var token = jwtTokenService.GenerateToken( user.FullName, user.UserName, roles, patientId,doctorId);
             return Ok(token);
         }
 
@@ -60,13 +90,24 @@ namespace Hospital_FinalP.Controllers
         
         public async Task<IActionResult> SignUp([FromBody] SignUpDto dto)
         {
+
+
+            var existingUser = await _userManager.FindByNameAsync(dto.UserName);
+            if (existingUser != null)
+            {
+                return BadRequest("Username already exists.");
+            }
+
+            var existingEmail = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingEmail != null)
+            {
+                return BadRequest("Email address is already in use.");
+            }
+
+
             var userEntity = _mapper.Map<AppUser>(dto);
 
-
-
-
             var result = await _userManager.CreateAsync(userEntity,dto.Password);
-
             if (result.Succeeded)
             {
                 if (dto.IsAdmin)
@@ -82,8 +123,9 @@ namespace Hospital_FinalP.Controllers
             }
             else
             {
-                return BadRequest();
+                return BadRequest(result.Errors.Select(error => error.Description));
             }
+
             //kto mojet zareqat pachienta ?: 
             // appoitm scheduler ( u neqo toje nudet svoya str i tp , ottudai  smojet zareqat admina i tp v sluchae cheqo .
             //sam pachient

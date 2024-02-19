@@ -11,6 +11,8 @@ namespace Hospital_FinalP.AutoMapper
             CreateMap<SignUpDto, AppUser>();
             CreateMap<SignInDto, AppUser>();
 
+            CreateMap<AppUser, UserDto>();
+            CreateMap<UserDto, AppUser>();
         }
     }
 }

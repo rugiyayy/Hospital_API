@@ -3,6 +3,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hospital_FinalP.Data;
 using Hospital_FinalP.Entities;
+using Hospital_FinalP.Hubs;
 using Hospital_FinalP.Services.Abstract;
 using Hospital_FinalP.Services.Concrete;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -72,7 +73,7 @@ namespace Hospital_FinalP
                 options.AddDefaultPolicy(
                                   policy =>
                                   {
-                                      policy.WithOrigins("http://localhost:3001")
+                                      policy.WithOrigins("http://localhost:3003")
                                       .AllowAnyMethod()
                                       .AllowAnyHeader()
                                       .AllowAnyHeader()
@@ -80,20 +81,24 @@ namespace Hospital_FinalP
                                   });
             });
 
-            //for validators
-            //builder.Services.AddFluentValidationAutoValidation()
-            //    .AddFluentValidationClientsideAdapters()
-            //    .AddValidatorsFromAssemblyContaining(typeof(Program));
+            
+
+
+            builder.Services.AddFluentValidationAutoValidation()
+                  .AddFluentValidationClientsideAdapters()
+                  .AddValidatorsFromAssemblyContaining(typeof(Program));
+
+
 
             builder.Services.Configure<ApiBehaviorOptions>(apiBehaviorOptions => {
-                apiBehaviorOptions.InvalidModelStateResponseFactory = actionContext => {
-                    var pd = new ProblemDetails();
-                    pd.Type = apiBehaviorOptions.ClientErrorMapping[400].Link;
-                    pd.Title = apiBehaviorOptions.ClientErrorMapping[400].Title;
-                    pd.Status = 400;
-                    pd.Extensions.Add("traceId", actionContext.HttpContext.TraceIdentifier);
-                    return new BadRequestObjectResult(pd);
-                };
+                //apiBehaviorOptions.InvalidModelStateResponseFactory = actionContext => {
+                //    var pd = new ProblemDetails();
+                //    pd.Type = apiBehaviorOptions.ClientErrorMapping[400].Link;
+                //    pd.Title = apiBehaviorOptions.ClientErrorMapping[400].Title;
+                //    pd.Status = 400;
+                //    pd.Extensions.Add("traceId", actionContext.HttpContext.TraceIdentifier);
+                //    return new BadRequestObjectResult(pd);
+                //};
             });
 
             builder.Services.AddControllers();
@@ -128,7 +133,7 @@ namespace Hospital_FinalP
 
             builder.Services.AddSingleton<IFileService, FileService>();
 
-
+            builder.Services.AddSignalR();
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -140,7 +145,7 @@ namespace Hospital_FinalP
             await DataSeed.InitializeAsync(app.Services, app.Configuration);
 
 
-            // Configure the HTTP request pipeline.
+            
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -156,6 +161,8 @@ namespace Hospital_FinalP
 
             app.UseStaticFiles();
             app.MapControllers();
+            app.MapHub<ChatHub>("/chathub");
+
 
             app.Run();
         }

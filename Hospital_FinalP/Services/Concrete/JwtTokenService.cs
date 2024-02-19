@@ -15,7 +15,7 @@ namespace Hospital_FinalP.Services.Concrete
             _configuration = configuration;
         }
 
-        public string GenerateToken(string fullName, string userName, List<string> roles, int? patientId = null)
+        public string GenerateToken(string fullName, string userName, List<string> roles, int? patientId = null, int? doctorId = null)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:SecretKey"]));
@@ -34,6 +34,11 @@ namespace Hospital_FinalP.Services.Concrete
             if (patientId.HasValue)
             {
                 claims.Add(new Claim("PatientId", patientId.Value.ToString())); // Include patient ID claim
+            }
+
+            if (doctorId.HasValue)
+            {
+                claims.Add(new Claim("DoctorId", doctorId.Value.ToString())); 
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor

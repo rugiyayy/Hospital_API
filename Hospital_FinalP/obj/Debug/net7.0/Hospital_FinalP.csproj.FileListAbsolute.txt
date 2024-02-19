@@ -268,3 +268,4 @@ C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Microsoft
 C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Microsoft.AspNetCore.Mvc.NewtonsoftJson.dll
 C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Newtonsoft.Json.Bson.dll
 C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\Hospital_FinalP.staticwebassets.runtime.json
+C:\Users\user\Desktop\Hospital_FinalP\Hospital_FinalP\bin\Debug\net7.0\System.Net.WebSockets.WebSocketProtocol.dll

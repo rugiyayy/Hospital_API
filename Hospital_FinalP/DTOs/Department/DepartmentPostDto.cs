@@ -22,7 +22,7 @@ namespace Hospital_FinalP.DTOs.Department
             RuleFor(x => x.DepartmentDescription)
                 .NotNull().WithMessage("Department Description is required!")
                 .Must(name => !string.IsNullOrWhiteSpace(name)).WithMessage("Department Description is empty")
-                .Length(3, 200).WithMessage("Department Description can't be less than 3 characters and more than 200 characters!");
+                .MinimumLength(3).WithMessage("Department Description can't be less than 3 characters and more than 200 characters!");
 
             RuleFor(x => x.ServiceCost)
                .NotEmpty().WithMessage("Appointment Price is required!")

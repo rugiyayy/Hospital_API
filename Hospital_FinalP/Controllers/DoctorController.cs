@@ -62,22 +62,25 @@ namespace Hospital_FinalP.Controllers
 
             //return Ok(dto);
 
-            var doctorDto = _context.Doctors
-                .Include(x => x.DoctorType)
-                .Include(x => x.Department)
-                .Include(x => x.DocPhoto)
-                .Include(x => x.DoctorDetail)
-                .Include(x => x.ExaminationRoom)
-                .Select(x => _mapper.Map(x, new DoctorGetDto
-                {
-                    DoctorTypeName = x.DoctorType.Name,
-                    DepartmentName = x.Department.Name,
-                    ServiceCost = x.Department.ServiceCost,
+                var doctors = _context.Doctors
+                        .Include(x => x.DoctorType)
+                        .Include(x => x.Department)
+                        .Include(x => x.DocPhoto)
+                        .Include(x => x.DoctorDetail)
+                        .Include(x => x.ExaminationRoom)
+                        .AsNoTracking()
+                        .ToList();
 
 
-
-                })).AsNoTracking()
-                .ToList();
+              var doctorDto = doctors
+                         .Select(x => _mapper.Map(x, new DoctorGetDto
+                         {
+                             DoctorTypeName = x.DoctorType.Name,
+                             DepartmentName = x.Department.Name,
+                             ServiceCost = x.Department.ServiceCost,
+                         }))
+                         .OrderBy(x => x.FullName)
+                         .ToList();
 
             return Ok(doctorDto);
 
@@ -144,8 +147,8 @@ namespace Hospital_FinalP.Controllers
 
             doctorEntity.WorkingSchedule = new WorkingSchedule
             {
-                StartTime = dto.WorkingSchedule.StartTime != null ? TimeSpan.Parse(dto.WorkingSchedule.StartTime) : TimeSpan.FromHours(8), // Default value for StartTime is 8 AM
-                EndTime = dto.WorkingSchedule.EndTime != null ? TimeSpan.Parse(dto.WorkingSchedule.EndTime) : TimeSpan.FromHours(17), // Default value for EndTime is 5 PM
+                StartTime = dto.WorkingSchedule.StartTime != null ? TimeSpan.Parse(dto.WorkingSchedule.StartTime) : TimeSpan.FromHours(9), 
+                EndTime = dto.WorkingSchedule.EndTime != null ? TimeSpan.Parse(dto.WorkingSchedule.EndTime) : TimeSpan.FromHours(18), 
                 WorkingDays = dto.WorkingSchedule.WorkingDays.Select(d => new WorkingDay { DayOfWeek = d.DayOfWeek }).ToList()
             };
 
@@ -211,7 +214,7 @@ namespace Hospital_FinalP.Controllers
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromForm] DoctorPutDto dto)
         {
-           
+
 
             var existingDoctorWithEmail = _context.DoctorDetails
        .Where(dd => dd.DoctorId != id)
