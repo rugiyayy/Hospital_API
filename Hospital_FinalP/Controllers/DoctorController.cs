@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.Account;
+using Hospital_FinalP.DTOs.Apointment;
 using Hospital_FinalP.DTOs.Doctors;
+using Hospital_FinalP.DTOs.ExaminationRooms;
 using Hospital_FinalP.Entities;
+using Hospital_FinalP.Migrations;
 using Hospital_FinalP.Services.Abstract;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -29,63 +32,140 @@ namespace Hospital_FinalP.Controllers
             _fileService = fileService;
         }
 
+        //[HttpGet]
+        //public IActionResult GetAll(/*[FromQuery(Name = "_page")] int page, [FromQuery(Name = "_perPage")]  int perPage*/)
+        //{
+        //    //    page = (page <= 0) ? 1 : page;
+
+        //    //    decimal doctorCount = _context.Doctors.Count();
+
+
+        //    //    int totalPages = (int)Math.Ceiling(doctorCount / perPage);
+
+
+        //    //var doctorDto = _context.Doctors
+        //    //    .Include(x => x.DoctorType)
+        //    //    .Include(x => x.Department)
+        //    //    .Include(x => x.DocPhoto)
+        //    //    .Include(x => x.DoctorDetail)
+        //    //    .Include(x => x.ExaminationRoom);
+
+        //    //  //.OrderBy(x => x.Id)
+        //    //  //  .Skip((page - 1) * perPage)
+        //    //  //  .Take(perPage)
+        //    //  //  .AsNoTracking()
+        //    //  //  .ToList();
+
+        //    //var dto = doctorDto.Select(x => _mapper.Map(x, new DoctorGetDto
+        //    //{
+        //    //    DoctorTypeName = x.DoctorType.Name,
+        //    //    DepartmentName = x.Department.Name,
+
+        //    //}));
+
+        //    //return Ok(dto);
+
+        //        var doctors = _context.Doctors
+        //                .Include(x => x.DoctorType)
+        //                .Include(x => x.Department)
+        //                .Include(x => x.DocPhoto)
+        //                .Include(x => x.DoctorDetail)
+        //                .Include(x => x.ExaminationRoom)
+        //                .AsNoTracking()
+        //                .ToList();
+
+
+        //      var doctorDto = doctors
+        //                 .Select(x => _mapper.Map(x, new DoctorGetDto
+        //                 {
+        //                     DoctorTypeName = x.DoctorType.Name,
+        //                     DepartmentName = x.Department.Name,
+        //                     ServiceCost = x.Department.ServiceCost,
+        //                 }))
+        //                 .OrderBy(x => x.FullName)
+        //                 .ToList();
+
+        //    return Ok(doctorDto);
+
+
+        //}
+
+        //paging filtering etc 
+
+
         [HttpGet]
-        public IActionResult GetAll(/*[FromQuery(Name = "_page")] int page, [FromQuery(Name = "_perPage")]  int perPage*/)
+        public async Task<IActionResult> GetAll(int? page, int? perPage, string doctorTypeName = null, string departmentName = null, string doctorName = null, int? examinationRoomNumber = null)
         {
-            //    page = (page <= 0) ? 1 : page;
-
-            //    decimal doctorCount = _context.Doctors.Count();
-
-
-            //    int totalPages = (int)Math.Ceiling(doctorCount / perPage);
-
-
-            //var doctorDto = _context.Doctors
-            //    .Include(x => x.DoctorType)
-            //    .Include(x => x.Department)
-            //    .Include(x => x.DocPhoto)
-            //    .Include(x => x.DoctorDetail)
-            //    .Include(x => x.ExaminationRoom);
-
-            //  //.OrderBy(x => x.Id)
-            //  //  .Skip((page - 1) * perPage)
-            //  //  .Take(perPage)
-            //  //  .AsNoTracking()
-            //  //  .ToList();
-
-            //var dto = doctorDto.Select(x => _mapper.Map(x, new DoctorGetDto
-            //{
-            //    DoctorTypeName = x.DoctorType.Name,
-            //    DepartmentName = x.Department.Name,
-
-            //}));
-
-            //return Ok(dto);
-
-                var doctors = _context.Doctors
+            IQueryable<Doctor> query = _context.Doctors
                         .Include(x => x.DoctorType)
                         .Include(x => x.Department)
                         .Include(x => x.DocPhoto)
                         .Include(x => x.DoctorDetail)
-                        .Include(x => x.ExaminationRoom)
-                        .AsNoTracking()
-                        .ToList();
+                        .Include(x => x.ExaminationRoom);
+
+           
+
+            if (!string.IsNullOrEmpty(doctorName))
+            {
+                query = query.Where(a => a.FullName.Contains(doctorName));
+            }
+            if (!string.IsNullOrEmpty(doctorTypeName))
+            {
+                query = query.Where(a => a.DoctorType.Name.Contains(doctorTypeName));
+            }
+            if (!string.IsNullOrEmpty(departmentName))
+            {
+                query = query.Where(a => a.Department.Name.Contains(departmentName));
+            }
+            if (examinationRoomNumber.HasValue)
+            {
+                query = query.Where(a => a.ExaminationRoom.RoomNumber == examinationRoomNumber.Value);
+            }
+
+            int totalCount = await query.CountAsync();
+
+            if (page.HasValue && perPage.HasValue)
+            {
+                int currentPage = page.Value > 0 ? page.Value : 1;
+                int itemsPerPage = perPage.Value > 0 ? perPage.Value : 10;
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+                currentPage = currentPage > totalPages ? totalPages : currentPage;
+
+                int skip = Math.Max((currentPage - 1) * itemsPerPage, 0);
+
+                query = query.OrderBy(a => a.FullName).Skip(skip).Take(itemsPerPage);
+            }
+            else
+            {
+                query = query.OrderBy(a => a.FullName);
+            }
 
 
-              var doctorDto = doctors
-                         .Select(x => _mapper.Map(x, new DoctorGetDto
-                         {
-                             DoctorTypeName = x.DoctorType.Name,
-                             DepartmentName = x.Department.Name,
-                             ServiceCost = x.Department.ServiceCost,
-                         }))
-                         .OrderBy(x => x.FullName)
-                         .ToList();
+            var doctors = await query
+                .Select(x => _mapper.Map(x, new DoctorGetDto
+                {
+                    DoctorTypeName = x.DoctorType.Name,
+                    DepartmentName = x.Department.Name,
+                    ServiceCost = x.Department.ServiceCost,
+                    ExaminationRoom = new ExaminationRoomGetDto
+                    {
+                        RoomNumber = x.ExaminationRoom.RoomNumber,
+                    }
+                }))
+                .AsNoTracking()
+                .ToListAsync();
 
-            return Ok(doctorDto);
+            var examinationRooms = await _context.ExaminationRooms
+                    .AsNoTracking()
+                    .ToListAsync();
 
+            return Ok(new { totalCount, doctors, examinationRooms });
 
         }
+
+
+
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -108,9 +188,10 @@ namespace Hospital_FinalP.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromForm] DoctorPostDto dto, [FromServices] UserManager<AppUser> userManager)
         {
+            #region ErrorHandling
             var existingDoctor = _context.Doctors
-                    .AsEnumerable()
-                    .FirstOrDefault(d => d.FullName.Trim().Equals(dto.FullName.Trim(), StringComparison.OrdinalIgnoreCase));
+                  .AsEnumerable()
+                  .FirstOrDefault(d => d.FullName.Trim().Equals(dto.FullName.Trim(), StringComparison.OrdinalIgnoreCase));
 
 
             if (existingDoctor != null)
@@ -142,9 +223,10 @@ namespace Hospital_FinalP.Controllers
                 return Conflict($"Examination Room with Room Number {dto.ExaminationRoom.RoomNumber} is already associated with another doctor.");
             }
 
+            #endregion
+
 
             var doctorEntity = _mapper.Map<Doctor>(dto);
-
             doctorEntity.WorkingSchedule = new WorkingSchedule
             {
                 StartTime = dto.WorkingSchedule.StartTime != null ? TimeSpan.Parse(dto.WorkingSchedule.StartTime) : TimeSpan.FromHours(9), 
@@ -153,19 +235,10 @@ namespace Hospital_FinalP.Controllers
             };
 
 
-
-
-
-
-
-
-
             doctorEntity.MaxAppointments = doctorEntity.CalculateMaxAppointments(TimeSpan.FromMinutes(30)); // Assuming appointment duration is 30 minutes
 
 
-
             _context.Add(doctorEntity);
-
 
             if (dto.Photo != null)
             {
@@ -174,30 +247,8 @@ namespace Hospital_FinalP.Controllers
 
             }
 
-
-
-
-
-            //{
-            //    // Check if the Department and DoctorType exist before saving the photo
-            //    if (existingDepartment != null && existingDoctorType != null)
-            //    {
-            //        var imageName = _fileService.SaveImage(dto.Photo);
-            //        doctorEntity.DocPhoto = new DocPhoto { PhotoPath = imageName };
-            //    }
-            //    else
-            //    {
-            //        return BadRequest("Department or DoctorType does not exist. Photo not added.");
-            //    }
-            //}
-
-
-
-
-            _context.SaveChanges();
             var docUser = new AppUser { UserName = dto.DoctorDetail.Email, Email = dto.DoctorDetail.Email, FullName = dto.FullName };
             var result = await userManager.CreateAsync(docUser, dto.Password);
-
             if (result.Succeeded)
             {
                 await userManager.AddToRoleAsync(docUser, "Doctor");
@@ -207,6 +258,8 @@ namespace Hospital_FinalP.Controllers
                 return BadRequest(result.Errors.Select(error => error.Description));
             }
 
+
+            _context.SaveChanges();
             return Ok("Doctor and Doctor Account created successfully");
 
         }
@@ -218,13 +271,26 @@ namespace Hospital_FinalP.Controllers
 
             var existingDoctorWithEmail = _context.DoctorDetails
        .Where(dd => dd.DoctorId != id)
-       .AsEnumerable()  // Switch to client evaluation
+       .AsEnumerable()  
        .FirstOrDefault(d => d.Email.Equals(dto.DoctorDetail.Email, StringComparison.OrdinalIgnoreCase));
 
             if (existingDoctorWithEmail != null)
             {
-                return BadRequest($"Email {dto.DoctorDetail.Email} is already associated with another doctor.");
+                return Conflict($"Email {dto.DoctorDetail.Email} is already associated with another doctor.");
             }
+
+
+            var existingDoctorPhoneNumber = _context.DoctorDetails
+     .Where(dd => dd.DoctorId != id)
+     .AsEnumerable()
+     .FirstOrDefault(d => d.PhoneNumber.Equals(dto.DoctorDetail.PhoneNumber, StringComparison.OrdinalIgnoreCase));
+
+            if (existingDoctorPhoneNumber != null)
+            {
+                return Conflict($"Phone Number {dto.DoctorDetail.PhoneNumber} is already associated with another doctor.");
+            }
+
+
             var doctor = _context.Doctors
                 .Include(x => x.DocPhoto)
                 .Include(x => x.DoctorDetail)
@@ -255,13 +321,13 @@ namespace Hospital_FinalP.Controllers
                 _fileService.DeleteFile(doctor.DocPhoto.PhotoPath);
             }
 
-            if (dto.Photo != null)
-            {
-                var imageName = _fileService.SaveImage(dto.Photo);
-                doctor.DocPhoto = new DocPhoto { PhotoPath = imageName };
+            //if (dto.Photo != null)
+            //{
+            //    var imageName = _fileService.SaveImage(dto.Photo);
+            //    doctor.DocPhoto = new DocPhoto { PhotoPath = imageName };
 
 
-            }
+            //}
 
             _context.SaveChanges();
 

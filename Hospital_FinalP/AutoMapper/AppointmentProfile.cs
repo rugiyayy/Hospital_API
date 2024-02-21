@@ -9,7 +9,11 @@ namespace Hospital_FinalP.AutoMapper
     {
         public AppointmentProfile()
         {
-            CreateMap<Appointment, AppointmentGetDto>();
+            CreateMap<Appointment, AppointmentGetDto>()
+                .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.StartTime.Date >= DateTime.Today))
+                .ForMember(dest => dest.FormattedStartTime, opt => opt.MapFrom(src => src.StartTime.ToString("dd-MM-yyyy HH:mm")))
+                .ForMember(dest => dest.FormattedEndTime, opt => opt.MapFrom(src => src.EndTime.ToString("dd-MM-yyyy HH:mm")));
+
             CreateMap<AppointmentPostDto, Appointment>();
             CreateMap<AppointmentPutDto, Appointment>();
         }

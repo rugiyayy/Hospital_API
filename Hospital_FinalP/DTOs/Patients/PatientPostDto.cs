@@ -16,7 +16,6 @@ namespace Hospital_FinalP.DTOs.Patients
         public string PatientIdentityNumber { get; set; }//ID(FIN)
         public DateTime BirthDate { get; set; }
         public string Password { get; set; }
-        //public List<AppointmentPutDto> Appointments { get; set; }
 
         public class PatientPostDtoValidator : AbstractValidator<PatientPostDto>
         {

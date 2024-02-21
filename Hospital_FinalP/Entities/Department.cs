@@ -7,12 +7,13 @@
         public int Id { get; set; }
         public string Name { get; set; }
         public string DepartmentDescription { get; set; }
+        public decimal ServiceCost { get; set; }
         public List<Doctor> Doctors { get; set; }
         public List<Disease> Diseases { get; set; }
 
 
 
-        public decimal ServiceCost { get; set; } 
+        
 
 
     }

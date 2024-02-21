@@ -39,9 +39,18 @@ namespace Hospital_FinalP.Controllers
                 .Include(a => a.Doctor)
                 .Include(a => a.Patient);
 
+
+
             if (isActive.HasValue)
             {
-                query = query.Where(a => a.IsActive == isActive.Value);
+                if (isActive.Value)
+                {
+                    query = query.Where(a => a.IsActive && a.StartTime >= DateTime.UtcNow);
+                }
+                else 
+                {
+                    query = query.Where(a => !a.IsActive || a.EndTime < DateTime.UtcNow);
+                }
             }
 
             if (!string.IsNullOrEmpty(doctorName))
@@ -94,7 +103,7 @@ namespace Hospital_FinalP.Controllers
         [HttpGet("patients/{patientId}")]
         public async Task<IActionResult> GetAppointmentsForPatient(int patientId, [FromQuery(Name = "_page")] int? page, [FromQuery(Name = "_perPage")] int? perPage)
         {
-            if (_context.Appointments == null) return NotFound();
+            if (_context.Appointments == null) return NotFound(); 
 
             IQueryable<Appointment> appointmentsQuery = _context.Appointments
                 .Include(a => a.Doctor)
@@ -144,13 +153,18 @@ namespace Hospital_FinalP.Controllers
                 .OrderBy(a => a.StartTime);
 
 
-
             if (isActive.HasValue)
             {
-                appointmentsQuery = appointmentsQuery.Where(a => a.IsActive == isActive.Value);
+                if (isActive.Value) 
+                {
+                    appointmentsQuery = appointmentsQuery.Where(a => a.IsActive && a.StartTime >= DateTime.UtcNow);
+                }
+                else 
+                {
+                    appointmentsQuery = appointmentsQuery.Where(a => !a.IsActive || a.EndTime < DateTime.UtcNow);
+                }
             }
 
-          
             if (startDate.HasValue && endDate.HasValue)
             {
                 appointmentsQuery = appointmentsQuery.Where(a => a.StartTime.Date >= startDate.Value.Date && a.EndTime.Date <= endDate.Value.Date);
@@ -163,9 +177,6 @@ namespace Hospital_FinalP.Controllers
             {
                 appointmentsQuery = appointmentsQuery.Where(a => a.EndTime.Date <= endDate.Value.Date);
             }
-
-
-
 
 
 
@@ -189,6 +200,29 @@ namespace Hospital_FinalP.Controllers
             }
 
 
+            DateTime today = DateTime.UtcNow.Date;
+
+            var todaysAppointments = await _context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Patient)
+                .Where(a => a.DoctorId == doctorId && a.StartTime.Date == today).Select(a => new
+                {
+                    AppointmentId=a.Id,
+                    DoctorFullName=a.Doctor.FullName,
+                    DoctorEmail=a.Doctor.DoctorDetail.Email,
+                    PatientFullName = a.Patient.FullName,
+                    PatientEmail = a.Patient.Email,
+                    StartTime = a.StartTime.ToString("dd-MM-yyyy HH:mm:ss"),
+                    EndTime = a.EndTime.ToString("dd-MM-yyyy HH:mm:ss"),
+                    a.Description,
+                   
+                    a.IsActive
+                })
+        .ToListAsync();
+
+
+
+
             var appointments = await appointmentsQuery
                 .Select(x => _mapper.Map(x, new AppointmentGetDto()))
                 .AsNoTracking()
@@ -196,8 +230,23 @@ namespace Hospital_FinalP.Controllers
 
 
 
-            return Ok(new { appointments, totalCount });
+            return Ok(new { appointments, totalCount, todaysAppointments });
         }
+
+        //[HttpGet("{doctorId}/appointments/today")]
+        //public async Task<IActionResult> GetTodaysAppointmentsForDoctor(int doctorId)
+        //{
+        //    DateTime today = DateTime.UtcNow.Date;
+
+        //    var appointments = await _context.Appointments
+        //        .Include(a => a.Doctor)
+        //        .Include(a => a.Patient)
+        //        .Where(a => a.DoctorId == doctorId && a.StartTime.Date == today)
+        //        .ToListAsync();
+
+        //    return Ok(appointments);
+        //}
+
 
 
 
@@ -213,7 +262,7 @@ namespace Hospital_FinalP.Controllers
             if (appointment == null)
                 return NotFound("Appointment not found.");
 
-            bool isActive = appointment.StartTime.Date >= DateTime.Today;
+            bool isActive = appointment.StartTime >= DateTime.UtcNow;
 
             var appointmentDto = _mapper.Map<AppointmentGetDto>(appointment);
             appointmentDto.IsActive = isActive;

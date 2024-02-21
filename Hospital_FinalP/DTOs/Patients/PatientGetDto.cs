@@ -14,7 +14,6 @@ namespace Hospital_FinalP.DTOs.Patients
         public string Email { get; set; }
         public string PatientIdentityNumber { get; set; }//ID(FIN)
         public DateTime BirthDate { get; set; }
-        public List<AppointmentGetDto> Appointments { get; set; }
 
     }
 }

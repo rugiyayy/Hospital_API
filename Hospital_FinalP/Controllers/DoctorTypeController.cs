@@ -22,16 +22,42 @@ namespace Hospital_FinalP.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public IActionResult Get([FromQuery(Name = "_page")] int? page, [FromQuery(Name = "_perPage")] int? perPage)
+        public async Task<IActionResult> Get(int? page, int? perPage, string typeName = null)
         {
             if (_context.DoctorTypes == null) return NotFound();
 
-            var typesDto = _context.DoctorTypes
+            IQueryable<DoctorType> query = _context.DoctorTypes;
+
+            if (!string.IsNullOrEmpty(typeName))
+            {
+                query = query.Where(a => a.Name.Contains(typeName));
+            }
+
+            int totalCount = await query.CountAsync();
+
+            if (page.HasValue && perPage.HasValue)
+            {
+                int currentPage = page.Value > 0 ? page.Value : 1;
+                int itemsPerPage = perPage.Value > 0 ? perPage.Value : 10;
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+                currentPage = currentPage > totalPages ? totalPages : currentPage;
+
+                int skip = Math.Max((currentPage - 1) * itemsPerPage, 0);
+
+                query = query.OrderBy(a => a.Name).Skip(skip).Take(itemsPerPage);
+            }
+            else
+            {
+                query = query.OrderBy(a => a.Name);
+            }
+
+            var types = await query
                .Select(x => _mapper.Map(x, new DoctorTypeGetDto()))
                .AsNoTracking()
-               .ToList();
+               .ToListAsync();
 
-            return Ok(typesDto);
+            return Ok(new { types , totalCount});
         }
 
         [HttpGet("{id}")]

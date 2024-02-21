@@ -2,6 +2,7 @@
 using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.Department;
 using Hospital_FinalP.DTOs.Doctors;
+using Hospital_FinalP.DTOs.ExaminationRooms;
 using Hospital_FinalP.DTOs.Patients;
 using Hospital_FinalP.Entities;
 using Microsoft.AspNetCore.Http;
@@ -25,15 +26,50 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get(int? page, int? perPage, string patientFullName = null)
         {
             if (_context.Patients == null) return NotFound();
-            var patientssDto = _context.Patients
-                .Select(x => _mapper.Map(x, new PatientGetDto()))
-                .AsNoTracking()
-                .ToList();
 
-            return Ok(patientssDto);
+            IQueryable<Patient> query = _context.Patients;
+
+            if (!string.IsNullOrEmpty(patientFullName))
+            {
+                query = query.Where(a => a.FullName.Contains(patientFullName));
+            }
+
+            int totalCount = await query.CountAsync();
+
+            if (page.HasValue && perPage.HasValue)
+            {
+                int currentPage = page.Value > 0 ? page.Value : 1;
+                int itemsPerPage = perPage.Value > 0 ? perPage.Value : 10;
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+                currentPage = currentPage > totalPages ? totalPages : currentPage;
+
+                int skip = Math.Max((currentPage - 1) * itemsPerPage, 0);
+
+                query = query.OrderBy(a => a.FullName).Skip(skip).Take(itemsPerPage);
+            }
+            else
+            {
+                query = query.OrderBy(a => a.FullName);
+            }
+
+            var patients = await query
+               .Select(x => _mapper.Map(x, new PatientGetDto()))
+               .AsNoTracking()
+               .ToListAsync();
+
+
+
+
+            //var patientssDto = _context.Patients
+            //    .Select(x => _mapper.Map(x, new PatientGetDto()))
+            //    .AsNoTracking()
+            //    .ToList();
+
+            return Ok(new { patients , totalCount});
         }
 
         [HttpGet("{id}")]

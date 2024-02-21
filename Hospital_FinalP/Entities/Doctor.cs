@@ -5,8 +5,6 @@
         public int Id { get; set; }
         public string FullName { get; set; }
         public int MaxAppointments { get; set; }
-        //public int AvailableAppointments { get; set; }
-
 
         public WorkingSchedule WorkingSchedule { get; set; }
 

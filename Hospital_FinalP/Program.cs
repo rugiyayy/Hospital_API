@@ -76,8 +76,8 @@ namespace Hospital_FinalP
                                       policy.WithOrigins("http://localhost:3003")
                                       .AllowAnyMethod()
                                       .AllowAnyHeader()
-                                      .AllowAnyHeader()
                                       .AllowAnyOrigin();
+                                        //.AllowCredentials(); 
                                   });
             });
 
@@ -101,6 +101,13 @@ namespace Hospital_FinalP
                 //};
             });
 
+
+
+
+
+
+
+            builder.Services.AddSignalR();
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -133,7 +140,8 @@ namespace Hospital_FinalP
 
             builder.Services.AddSingleton<IFileService, FileService>();
 
-            builder.Services.AddSignalR();
+            //builder.Services.AddSingleton<SharedDb>();
+
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -161,7 +169,8 @@ namespace Hospital_FinalP
 
             app.UseStaticFiles();
             app.MapControllers();
-            app.MapHub<ChatHub>("/chathub");
+
+            //app.MapHub<ChatHub>("/Chat");
 
 
             app.Run();

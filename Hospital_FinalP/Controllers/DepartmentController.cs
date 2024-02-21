@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.Department;
+using Hospital_FinalP.DTOs.DoctorType;
 using Hospital_FinalP.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,15 +24,42 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get(int? page, int? perPage, string departmentName = null)
         {
             if (_context.Departments == null) return NotFound();
-            var departmentsDto = _context.Departments
-                .Select(x => _mapper.Map(x, new DepartmentGetDto()))
-                .AsNoTracking()
-                .ToList();
 
-            return Ok(departmentsDto);
+            IQueryable<Department> query = _context.Departments;
+
+            if (!string.IsNullOrEmpty(departmentName))
+            {
+                query = query.Where(a => a.Name.Contains(departmentName));
+            }
+
+            int totalCount = await query.CountAsync();
+
+            if (page.HasValue && perPage.HasValue)
+            {
+                int currentPage = page.Value > 0 ? page.Value : 1;
+                int itemsPerPage = perPage.Value > 0 ? perPage.Value : 10;
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+                currentPage = currentPage > totalPages ? totalPages : currentPage;
+
+                int skip = Math.Max((currentPage - 1) * itemsPerPage, 0);
+
+                query = query.OrderBy(a => a.Name).Skip(skip).Take(itemsPerPage);
+            }
+            else
+            {
+                query = query.OrderBy(a => a.Name);
+            }
+
+            var departments = await query
+               .Select(x => _mapper.Map(x, new DepartmentGetDto()))
+               .AsNoTracking()
+               .ToListAsync();
+
+            return Ok(new { departments, totalCount });
         }
 
         [HttpGet("{id}")]

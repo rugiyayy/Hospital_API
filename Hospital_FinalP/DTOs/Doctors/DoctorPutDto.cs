@@ -4,7 +4,7 @@ namespace Hospital_FinalP.DTOs.Doctors
 {
     public class DoctorPutDto
     {
-        public IFormFile Photo { get; set; }
+        //public IFormFile Photo { get; set; }
         public DoctorDetailPutDto DoctorDetail { get; set; }
     }
 }

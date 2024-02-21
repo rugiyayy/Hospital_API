@@ -26,7 +26,6 @@
 //        }
 //        public WorkingSchedulePutDto()
 //        {
-//            // Проверяем, были ли предоставлены дни работы, и если нет, добавляем их по умолчанию
 //            if (WorkingDays == null || WorkingDays.Count == 0)
 //            {
 //                WorkingDays = new List<WorkingDayPutDto>();

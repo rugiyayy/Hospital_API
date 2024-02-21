@@ -11,8 +11,6 @@ namespace Hospital_FinalP.DTOs.Patients
         public string PhoneNumber { get; set; }
         public string Email { get; set; }
 
-        //public List<AppointmentPutDto> Appointments { get; set; }
-
 
 
         public class PatientPutDtoValidator : AbstractValidator<PatientPutDto>
