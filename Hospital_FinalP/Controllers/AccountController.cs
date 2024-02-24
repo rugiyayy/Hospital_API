@@ -4,12 +4,16 @@ using Hospital_FinalP.DTOs.Account;
 using Hospital_FinalP.Entities;
 using Hospital_FinalP.Services.Abstract;
 using Humanizer;
+using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
+using MimeKit;
+using System.Security.Cryptography;
 
 namespace Hospital_FinalP.Controllers
 {
@@ -20,14 +24,14 @@ namespace Hospital_FinalP.Controllers
         private readonly AppDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly SignInManager<AppUser> _signInManager;
 
-
-
-        public AccountController(AppDbContext context, UserManager<AppUser> userManager, IMapper mapper)
+        public AccountController(AppDbContext context, UserManager<AppUser> userManager, IMapper mapper, SignInManager<AppUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
             _mapper = mapper;
+            _signInManager = signInManager;
         }
 
         [HttpGet("GetUsersByRole")]
@@ -81,13 +85,13 @@ namespace Hospital_FinalP.Controllers
                     doctorId = doctor.Id;
                 }
             }
-            var token = jwtTokenService.GenerateToken( user.FullName, user.UserName, roles, patientId,doctorId);
+            var token = jwtTokenService.GenerateToken(user.FullName, user.UserName, roles, patientId, doctorId);
             return Ok(token);
         }
 
         [HttpPost("SignUp")]
         //[Authorize(Roles = "Admin,Patient")]
-        
+
         public async Task<IActionResult> SignUp([FromBody] SignUpDto dto)
         {
 
@@ -107,7 +111,7 @@ namespace Hospital_FinalP.Controllers
 
             var userEntity = _mapper.Map<AppUser>(dto);
 
-            var result = await _userManager.CreateAsync(userEntity,dto.Password);
+            var result = await _userManager.CreateAsync(userEntity, dto.Password);
             if (result.Succeeded)
             {
                 if (dto.IsAdmin)
@@ -126,13 +130,95 @@ namespace Hospital_FinalP.Controllers
                 return BadRequest(result.Errors.Select(error => error.Description));
             }
 
-            //kto mojet zareqat pachienta ?: 
-            // appoitm scheduler ( u neqo toje nudet svoya str i tp , ottudai  smojet zareqat admina i tp v sluchae cheqo .
-            //sam pachient
-
-            // u appoitm schedulera toje budet sign up str otdelnaya chtobi on tam reqal patienta for appoinmet 
-
         }
 
+
+
+        //[HttpPost("SignOut")]
+        //public async Task<IActionResult> Logout()
+        //{
+        //    await _signInManager.SignOutAsync();
+
+        //    return Ok();
+        //}
+
+
+
+        [HttpPost("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                return BadRequest("User not found.");
+            }
+
+
+            string resetCode = GenerateResetCode(); 
+            user.ResetCode = resetCode;
+            user.ResetCodeExpires = DateTime.Now.AddDays(1);
+            await _context.SaveChangesAsync();
+
+            await SendResetPasswordEmail(user.Email, resetCode); 
+
+            return Ok("Reset code sent to your email.");
+        }
+
+
+
+        [HttpPost("resetPassword")]
+        public async Task<IActionResult> ResettPassword(ResetPasswordRequestDto request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetCode == request.Code);
+            if (user == null || user.ResetCodeExpires < DateTime.Now)
+            {
+                return BadRequest("Invalid CODE.");
+            }
+
+
+            user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, request.Password); 
+            user.ResetCode = null;
+            user.ResetCodeExpires = null;
+
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Password successfully reset.");
+        }
+
+
+
+
+        private async Task SendResetPasswordEmail(string email, string code)
+        {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("REY Hospital", "demo1flight@gmail.com"));
+            message.To.Add(new MailboxAddress("", email));
+            message.Subject = "Password Reset";
+
+            message.Body = new TextPart("plain")
+            {
+                Text = $"To reset your password, please use the following code: {code}"
+            };
+
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync("smtp.gmail.com", 587, false);
+                await client.AuthenticateAsync("demo1flight@gmail.com", "crvglwtaqkfpejxv");
+
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+        }
+
+        private string GenerateResetCode()
+        {
+            Random random = new Random();
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, 8).Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+
     }
+
 }

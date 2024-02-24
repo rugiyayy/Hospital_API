@@ -13,7 +13,8 @@ namespace Hospital_FinalP.DTOs.Doctors
         public string FullName { get; set; }
         public int DepartmentId { get; set; }
         public int DoctorTypeId { get; set; }
-        public IFormFile Photo { get; set; }
+        public IFormFile? Photo { get; set; }
+        //public string PhotoPath { get; set; }
         public  DoctorDetailPostDto DoctorDetail { get; set; }
         public WorkingSchedulePostDto WorkingSchedule { get; set; }
         public ExaminationRoomPostDto ExaminationRoom { get; set; }

@@ -1,6 +1,7 @@
 
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Hangfire;
 using Hospital_FinalP.Data;
 using Hospital_FinalP.Entities;
 using Hospital_FinalP.Hubs;
@@ -77,12 +78,15 @@ namespace Hospital_FinalP
                                       .AllowAnyMethod()
                                       .AllowAnyHeader()
                                       .AllowAnyOrigin();
-                                        //.AllowCredentials(); 
+                                      //.AllowCredentials(); 
                                   });
             });
 
-            
+            builder.Services.AddHangfire(config => config.UseSqlServerStorage(builder.Configuration.GetConnectionString("Default"))
+                .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings());
 
+            builder.Services.AddHangfireServer();
 
             builder.Services.AddFluentValidationAutoValidation()
                   .AddFluentValidationClientsideAdapters()
@@ -90,7 +94,8 @@ namespace Hospital_FinalP
 
 
 
-            builder.Services.Configure<ApiBehaviorOptions>(apiBehaviorOptions => {
+            builder.Services.Configure<ApiBehaviorOptions>(apiBehaviorOptions =>
+            {
                 //apiBehaviorOptions.InvalidModelStateResponseFactory = actionContext => {
                 //    var pd = new ProblemDetails();
                 //    pd.Type = apiBehaviorOptions.ClientErrorMapping[400].Link;
@@ -107,7 +112,7 @@ namespace Hospital_FinalP
 
 
 
-            builder.Services.AddSignalR();
+            //builder.Services.AddSignalR();
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -140,12 +145,13 @@ namespace Hospital_FinalP
 
             builder.Services.AddSingleton<IFileService, FileService>();
 
-            //builder.Services.AddSingleton<SharedDb>();
 
 
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             builder.Services.AddSingleton<IJwtTokenService, JwtTokenService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
 
             var app = builder.Build();
 
@@ -153,7 +159,7 @@ namespace Hospital_FinalP
             await DataSeed.InitializeAsync(app.Services, app.Configuration);
 
 
-            
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

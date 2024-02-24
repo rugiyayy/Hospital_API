@@ -4,6 +4,8 @@
     {
         public int Id { get; set; }
         public string FullName { get; set; }
+        public string? PhotoPath { get; set; }
+
         public int MaxAppointments { get; set; }
 
         public WorkingSchedule WorkingSchedule { get; set; }
@@ -58,7 +60,7 @@
         public DoctorType DoctorType { get; set; }
 
         public DoctorDetail DoctorDetail { get; set; }
-        public DocPhoto? DocPhoto { get; set; }
+        //public DocPhoto? DocPhoto { get; set; }
         public ExaminationRoom ExaminationRoom { get; set; }
         public List<Appointment> Appointments { get; set; }
 

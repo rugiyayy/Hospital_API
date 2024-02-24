@@ -44,11 +44,11 @@ namespace Hospital_FinalP.DTOs.Patients
 
             private bool IsAlphaOnly(string value)
             {
-                return Regex.IsMatch(value, @"^[a-zA-Z]+$");
+                return Regex.IsMatch(value, @"^[a-zA-Z\s]+$");
             }
             private bool IsEmailValid(string value)
             {
-                return Regex.IsMatch(value, @"@[a-zA-Z0-9\-\.]+\.(com|ru)$");
+                return Regex.IsMatch(value, @"@[a-zA-Z0-9\-\.]+\.(com|ru|edu|az)$");
             }
 
             private bool HasLetterAndDigit(string value)

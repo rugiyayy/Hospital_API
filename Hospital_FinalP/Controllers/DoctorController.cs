@@ -99,7 +99,6 @@ namespace Hospital_FinalP.Controllers
             IQueryable<Doctor> query = _context.Doctors
                         .Include(x => x.DoctorType)
                         .Include(x => x.Department)
-                        .Include(x => x.DocPhoto)
                         .Include(x => x.DoctorDetail)
                         .Include(x => x.ExaminationRoom);
 
@@ -156,11 +155,13 @@ namespace Hospital_FinalP.Controllers
                 .AsNoTracking()
                 .ToListAsync();
 
-            var examinationRooms = await _context.ExaminationRooms
-                    .AsNoTracking()
-                    .ToListAsync();
 
-            return Ok(new { totalCount, doctors, examinationRooms });
+
+            //var examinationRooms = await _context.ExaminationRooms
+            //        .AsNoTracking()
+            //        .ToListAsync();
+
+            return Ok(new { totalCount, doctors });
 
         }
 
@@ -172,7 +173,6 @@ namespace Hospital_FinalP.Controllers
             var doctor = _context.Doctors
                 .Include(x => x.DoctorType)
                 .Include(x => x.Department)
-                .Include(x => x.DocPhoto)
                 .Include(x => x.DoctorDetail)
                 .Include(x => x.ExaminationRoom).FirstOrDefault(x => x.Id == id);
 
@@ -243,7 +243,7 @@ namespace Hospital_FinalP.Controllers
             if (dto.Photo != null)
             {
                 var imageName = _fileService.SaveImage(dto.Photo);
-                doctorEntity.DocPhoto = new DocPhoto { PhotoPath = imageName };
+                doctorEntity.PhotoPath = imageName;
 
             }
 
@@ -292,7 +292,6 @@ namespace Hospital_FinalP.Controllers
 
 
             var doctor = _context.Doctors
-                .Include(x => x.DocPhoto)
                 .Include(x => x.DoctorDetail)
                 .Include(x => x.ExaminationRoom).FirstOrDefault(x => x.Id == id);
 
@@ -315,11 +314,11 @@ namespace Hospital_FinalP.Controllers
 
             //_mapper.Map(dto, doctor);
 
-            if (doctor.DocPhoto != null)
-            {
-                //deleting old one
-                _fileService.DeleteFile(doctor.DocPhoto.PhotoPath);
-            }
+            //if (doctor.PhotoPath != null)
+            //{
+            //    //deleting old one
+            //    _fileService.DeleteFile(doctor.PhotoPath);
+            //}
 
             //if (dto.Photo != null)
             //{
@@ -328,6 +327,18 @@ namespace Hospital_FinalP.Controllers
 
 
             //}
+            if (dto.Photo != null)
+            {
+                // Delete the existing photo
+                if (doctor.PhotoPath != null)
+                {
+                    _fileService.DeleteFile(doctor.PhotoPath);
+                }
+
+                // Save the new photo
+                var imageName = _fileService.SaveImage(dto.Photo);
+                doctor.PhotoPath = imageName;
+            } 
 
             _context.SaveChanges();
 
@@ -340,14 +351,13 @@ namespace Hospital_FinalP.Controllers
         public IActionResult Delete(int id)
         {
             var doctor = _context.Doctors
-                .Include(d => d.DocPhoto)
                 .FirstOrDefault(x => x.Id == id);
             if (doctor is null) return NotFound("Doctor Not Found");
 
 
-            if (doctor.DocPhoto != null)
+            if (doctor.PhotoPath != null)
             {
-                _fileService.DeleteFile(doctor.DocPhoto.PhotoPath);
+                _fileService.DeleteFile(doctor.PhotoPath);
             }
 
             _context.Remove(doctor);

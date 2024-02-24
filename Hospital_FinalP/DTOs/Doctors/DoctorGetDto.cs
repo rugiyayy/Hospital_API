@@ -20,8 +20,9 @@ namespace Hospital_FinalP.DTOs.Doctors
         //public int ExaminationRoomNumber { get; set; }
         public string DepartmentName { get; set; }
 
+        public string PhotoPath { get; set; }
 
-        public DocPhotoGetDto DocPhoto { get; set; }
+        //public DocPhotoGetDto DocPhoto { get; set; }
         public DoctorDetailGetDto DoctorDetail { get; set; }
         public ExaminationRoomGetDto ExaminationRoom { get; set; }
 

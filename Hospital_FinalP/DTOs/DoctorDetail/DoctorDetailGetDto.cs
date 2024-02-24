@@ -5,5 +5,7 @@
         public string PhoneNumber { get; set; }
         public  string Email { get; set; }
         public DateTime BirthDate { get; set; }
+        //public string PhotoPath { get; set; }
+
     }
 }

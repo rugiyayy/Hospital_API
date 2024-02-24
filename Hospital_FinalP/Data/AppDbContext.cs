@@ -18,15 +18,16 @@ namespace Hospital_FinalP.Data
         public DbSet<Department> Departments { get; set; }
         public DbSet<WorkingSchedule> WorkingSchedules { get; set; }
 
-        public DbSet<DocPhoto> DocPhotos { get; set; }
+        //public DbSet<DocPhoto> DocPhotos { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<DoctorDetail> DoctorDetails { get; set; }
         public DbSet<ExaminationRoom> ExaminationRooms { get; set; }
         public DbSet<Patient> Patients { get; set; }
         public DbSet<DoctorType> DoctorTypes { get; set; }
         public DbSet<WorkingDay> WorkingDays { get; set; }
+        public DbSet<Email> Emails { get; set; }
 
-        
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,7 +38,11 @@ namespace Hospital_FinalP.Data
             modelBuilder.Entity<WorkingSchedule>()
         .HasOne(ws => ws.Doctor) 
         .WithOne(d => d.WorkingSchedule) 
-        .HasForeignKey<WorkingSchedule>(ws => ws.DoctorId); 
+        .HasForeignKey<WorkingSchedule>(ws => ws.DoctorId);
+
+            modelBuilder.Entity<Doctor>()
+          .Property(p => p.PhotoPath)
+          .IsRequired(false);
 
             base.OnModelCreating(modelBuilder);
         }

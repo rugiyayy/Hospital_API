@@ -13,8 +13,7 @@ namespace Hospital_FinalP.AutoMapper
         {
             CreateMap<Doctor, DoctorGetDto>()
             .ForMember(dest => dest.DoctorDetail, opt => opt.MapFrom(src => src.DoctorDetail))
-            .ForMember(dest => dest.ExaminationRoom, opt => opt.MapFrom(src => src.ExaminationRoom))
-            .ForMember(dest => dest.DocPhoto, opt => opt.MapFrom(src => src.DocPhoto));
+            .ForMember(dest => dest.ExaminationRoom, opt => opt.MapFrom(src => src.ExaminationRoom));
 
 
             CreateMap<DoctorPostDto, Doctor>();

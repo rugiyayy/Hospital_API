@@ -1,4 +1,5 @@
-﻿namespace Hospital_FinalP.Entities
+﻿
+namespace Hospital_FinalP.Entities
 {
     public class Department
     //add kakie Diseases & Conditions dla kajdoqo departmenta, (kakie bolezni has kakie sympthoms dobav obazatelno eto i dalshe department id click olunduqda pust ob etom i budet 

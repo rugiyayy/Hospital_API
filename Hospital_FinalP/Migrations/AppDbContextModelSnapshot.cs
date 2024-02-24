@@ -68,6 +68,12 @@ namespace Hospital_FinalP.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ResetCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResetCodeExpires")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -180,29 +186,6 @@ namespace Hospital_FinalP.Migrations
                     b.ToTable("Disease");
                 });
 
-            modelBuilder.Entity("Hospital_FinalP.Entities.DocPhoto", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PhotoPath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DoctorId")
-                        .IsUnique();
-
-                    b.ToTable("DocPhotos");
-                });
-
             modelBuilder.Entity("Hospital_FinalP.Entities.Doctor", b =>
                 {
                     b.Property<int>("Id")
@@ -223,6 +206,9 @@ namespace Hospital_FinalP.Migrations
 
                     b.Property<int>("MaxAppointments")
                         .HasColumnType("int");
+
+                    b.Property<string>("PhotoPath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -282,6 +268,35 @@ namespace Hospital_FinalP.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DoctorTypes");
+                });
+
+            modelBuilder.Entity("Hospital_FinalP.Entities.Email", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("From")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("To")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Emails");
                 });
 
             modelBuilder.Entity("Hospital_FinalP.Entities.ExaminationRoom", b =>
@@ -569,17 +584,6 @@ namespace Hospital_FinalP.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("Hospital_FinalP.Entities.DocPhoto", b =>
-                {
-                    b.HasOne("Hospital_FinalP.Entities.Doctor", "Doctor")
-                        .WithOne("DocPhoto")
-                        .HasForeignKey("Hospital_FinalP.Entities.DocPhoto", "DoctorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Doctor");
-                });
-
             modelBuilder.Entity("Hospital_FinalP.Entities.Doctor", b =>
                 {
                     b.HasOne("Hospital_FinalP.Entities.Department", "Department")
@@ -720,8 +724,6 @@ namespace Hospital_FinalP.Migrations
             modelBuilder.Entity("Hospital_FinalP.Entities.Doctor", b =>
                 {
                     b.Navigation("Appointments");
-
-                    b.Navigation("DocPhoto");
 
                     b.Navigation("DoctorDetail")
                         .IsRequired();
