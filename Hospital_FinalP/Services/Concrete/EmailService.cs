@@ -21,10 +21,12 @@ namespace Hospital_FinalP.Services.Concrete
         {
             using (MailMessage mail = new MailMessage())
             {
-                mail.From = new MailAddress(from);
+                string senderInfo = $"From: Dr.{from}";
+
+                mail.From = new MailAddress(from, fromDisplayName);
                 mail.To.Add(to);
                 mail.Subject = subject;
-                mail.Body = body;
+                mail.Body = $"<h3>{senderInfo}</h3><br><br>{body}<br><br>Feel free to reach out to me via <strong>My</strong> email if you have any questions.<br><br>Sincerely,{fromDisplayName} ...";
                 mail.IsBodyHtml = true;
 
                 using (var smtp = new SmtpClient())

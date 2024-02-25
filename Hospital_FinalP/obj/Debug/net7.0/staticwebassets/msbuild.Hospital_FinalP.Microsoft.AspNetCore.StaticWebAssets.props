@@ -1,11 +1,11 @@
 ﻿<Project>
   <ItemGroup>
-    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\female4.jpga1cd3b39-fcf2-44bc-bd95-fa353a3409a4.jpg))">
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\female3.jpg01a6f3db-66b3-489c-8367-601e9a24c9eb.jpg))">
       <SourceType>Package</SourceType>
       <SourceId>Hospital_FinalP</SourceId>
       <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
       <BasePath>_content/Hospital_FinalP</BasePath>
-      <RelativePath>Images/female4.jpga1cd3b39-fcf2-44bc-bd95-fa353a3409a4.jpg</RelativePath>
+      <RelativePath>Images/female3.jpg01a6f3db-66b3-489c-8367-601e9a24c9eb.jpg</RelativePath>
       <AssetKind>All</AssetKind>
       <AssetMode>All</AssetMode>
       <AssetRole>Primary</AssetRole>
@@ -14,7 +14,39 @@
       <AssetTraitValue></AssetTraitValue>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\female4.jpga1cd3b39-fcf2-44bc-bd95-fa353a3409a4.jpg))</OriginalItemSpec>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\female3.jpg01a6f3db-66b3-489c-8367-601e9a24c9eb.jpg))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\female3.jpg0987af9a-b372-468d-b676-2912e90576be.jpg))">
+      <SourceType>Package</SourceType>
+      <SourceId>Hospital_FinalP</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Hospital_FinalP</BasePath>
+      <RelativePath>Images/female3.jpg0987af9a-b372-468d-b676-2912e90576be.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\female3.jpg0987af9a-b372-468d-b676-2912e90576be.jpg))</OriginalItemSpec>
+    </StaticWebAsset>
+    <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\female3.jpg2a4c4f77-bc8f-497d-a4f8-e4a22ae8332b.jpg))">
+      <SourceType>Package</SourceType>
+      <SourceId>Hospital_FinalP</SourceId>
+      <ContentRoot>$(MSBuildThisFileDirectory)..\staticwebassets\</ContentRoot>
+      <BasePath>_content/Hospital_FinalP</BasePath>
+      <RelativePath>Images/female3.jpg2a4c4f77-bc8f-497d-a4f8-e4a22ae8332b.jpg</RelativePath>
+      <AssetKind>All</AssetKind>
+      <AssetMode>All</AssetMode>
+      <AssetRole>Primary</AssetRole>
+      <RelatedAsset></RelatedAsset>
+      <AssetTraitName></AssetTraitName>
+      <AssetTraitValue></AssetTraitValue>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <OriginalItemSpec>$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\female3.jpg2a4c4f77-bc8f-497d-a4f8-e4a22ae8332b.jpg))</OriginalItemSpec>
     </StaticWebAsset>
     <StaticWebAsset Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..\staticwebassets\Images\man4.jpgcb491904-8e8f-45bc-bd6f-65f48e6ac12a.jpg))">
       <SourceType>Package</SourceType>

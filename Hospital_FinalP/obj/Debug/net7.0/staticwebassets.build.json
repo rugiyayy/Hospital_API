@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "XQWksUBrX08GXS4FQN+X9IY2TOY/E0V7w4DCfxyRZE0=",
+  "Hash": "Hj7TB4xharKMWpF8XoHfeB2TCO9vKpaM2ik+R1kYbAs=",
   "Source": "Hospital_FinalP",
   "BasePath": "_content/Hospital_FinalP",
   "Mode": "Default",
@@ -17,12 +17,12 @@
   ],
   "Assets": [
     {
-      "Identity": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\female4.jpga1cd3b39-fcf2-44bc-bd95-fa353a3409a4.jpg",
+      "Identity": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\female3.jpg01a6f3db-66b3-489c-8367-601e9a24c9eb.jpg",
       "SourceId": "Hospital_FinalP",
       "SourceType": "Discovered",
       "ContentRoot": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\",
       "BasePath": "_content/Hospital_FinalP",
-      "RelativePath": "Images/female4.jpga1cd3b39-fcf2-44bc-bd95-fa353a3409a4.jpg",
+      "RelativePath": "Images/female3.jpg01a6f3db-66b3-489c-8367-601e9a24c9eb.jpg",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -31,7 +31,41 @@
       "AssetTraitValue": "",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\Images\\female4.jpga1cd3b39-fcf2-44bc-bd95-fa353a3409a4.jpg"
+      "OriginalItemSpec": "wwwroot\\Images\\female3.jpg01a6f3db-66b3-489c-8367-601e9a24c9eb.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\female3.jpg0987af9a-b372-468d-b676-2912e90576be.jpg",
+      "SourceId": "Hospital_FinalP",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\",
+      "BasePath": "_content/Hospital_FinalP",
+      "RelativePath": "Images/female3.jpg0987af9a-b372-468d-b676-2912e90576be.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Images\\female3.jpg0987af9a-b372-468d-b676-2912e90576be.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\female3.jpg2a4c4f77-bc8f-497d-a4f8-e4a22ae8332b.jpg",
+      "SourceId": "Hospital_FinalP",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\",
+      "BasePath": "_content/Hospital_FinalP",
+      "RelativePath": "Images/female3.jpg2a4c4f77-bc8f-497d-a4f8-e4a22ae8332b.jpg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\Images\\female3.jpg2a4c4f77-bc8f-497d-a4f8-e4a22ae8332b.jpg"
     },
     {
       "Identity": "C:\\Users\\user\\Desktop\\Hospital_FinalP\\Hospital_FinalP\\wwwroot\\Images\\man4.jpgcb491904-8e8f-45bc-bd6f-65f48e6ac12a.jpg",

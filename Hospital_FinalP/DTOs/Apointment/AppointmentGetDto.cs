@@ -16,6 +16,7 @@ namespace Hospital_FinalP.DTOs.Apointment
         //public int DoctorId { get; set; }
         //public int PatientId { get; set; }
         public string PatientFullName { get; set; }
+        public string PatientEmail { get; set; }
         public string DoctorFullName { get; set; }
 
         public bool IsActive { get; set; }

@@ -216,8 +216,8 @@ namespace Hospital_FinalP.Controllers
                     DoctorEmail=a.Doctor.DoctorDetail.Email,
                     PatientFullName = a.Patient.FullName,
                     PatientEmail = a.Patient.Email,
-                    StartTime = a.StartTime.ToString("dd-MM-yyyy HH:mm:ss"),
-                    EndTime = a.EndTime.ToString("dd-MM-yyyy HH:mm:ss"),
+                    StartTime = a.StartTime.ToString("dd-MM-yyyy HH:mm"),
+                    EndTime = a.EndTime.ToString("dd-MM-yyyy HH:mm"),
                     a.Description,
                                      
                     a.IsActive
@@ -373,27 +373,14 @@ namespace Hospital_FinalP.Controllers
             var body = $"Your appointment with {doctor.FullName} is scheduled.";
             var from = "REY Hospital <demo1flight@gmail.com>";
 
-            // Schedule email sending 30 minutes before the appointment
-
 
             _context.Add(appointment);
             await _context.SaveChangesAsync();
-            var patientEmail = patient.Email;
 
-            // Отправка напоминания по электронной почте за час до назначенного времени
-            var reminderTime = dto.StartTime.AddMinutes(-20);  // Вычисляем время напоминания
-            var currentTime = DateTime.UtcNow;
-            var localReminderTime = TimeZoneInfo.ConvertTimeFromUtc(reminderTime, TimeZoneInfo.Local);
-
-            if (localReminderTime > currentTime)
-            {
-                // Формирование текста сообщения напоминания
-                var reminderBody = $"You have an appointment scheduled at {dto.StartTime.ToString()}.";
-
-                // Вызов метода вашей службы отправки электронной почты для отправки напоминания
-                await _emailService.SendEmailAsync("REY", patientEmail, "Appointment Reminder", reminderBody, from);
-            }
-
+            BackgroundJob.Schedule<IEmailService>(
+              x => x.SendEmailAsync(senderName, to, subject, body, from),
+              sendEmailJobTime
+          );
 
 
             return Ok(appointment);

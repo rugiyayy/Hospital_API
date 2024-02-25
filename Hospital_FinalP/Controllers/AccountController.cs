@@ -144,7 +144,7 @@ namespace Hospital_FinalP.Controllers
 
 
 
-        [HttpPost("forgotPassword")]
+        [HttpGet("forgotPassword")]
         public async Task<IActionResult> ForgotPassword(string email)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
