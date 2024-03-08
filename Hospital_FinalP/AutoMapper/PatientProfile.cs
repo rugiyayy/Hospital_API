@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Hospital_FinalP.DTOs.Doctors;
 using Hospital_FinalP.DTOs.Patients;
 using Hospital_FinalP.Entities;
 

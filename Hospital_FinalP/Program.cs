@@ -4,7 +4,6 @@ using FluentValidation.AspNetCore;
 using Hangfire;
 using Hospital_FinalP.Data;
 using Hospital_FinalP.Entities;
-using Hospital_FinalP.Hubs;
 using Hospital_FinalP.Services.Abstract;
 using Hospital_FinalP.Services.Concrete;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,8 +21,6 @@ namespace Hospital_FinalP
         public async static Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
-            // Add services to the container.
 
             builder.Services.AddDbContext<AppDbContext>(opt =>
             {
@@ -68,6 +65,7 @@ namespace Hospital_FinalP
                 options.SerializerSettings.DateFormatString = "dd-MM-yyyy";
                 options.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
             });
+
             //cors
             builder.Services.AddCors(options =>
             {
@@ -82,11 +80,11 @@ namespace Hospital_FinalP
                                   });
             });
 
-            builder.Services.AddHangfire(config => config.UseSqlServerStorage(builder.Configuration.GetConnectionString("Default"))
-                .UseSimpleAssemblyNameTypeSerializer()
-            .UseRecommendedSerializerSettings());
+            //builder.Services.AddHangfire(config => config.UseSqlServerStorage(builder.Configuration.GetConnectionString("Default"))
+            //    .UseSimpleAssemblyNameTypeSerializer()
+            //.UseRecommendedSerializerSettings());
 
-            builder.Services.AddHangfireServer();
+            //builder.Services.AddHangfireServer();
 
             builder.Services.AddFluentValidationAutoValidation()
                   .AddFluentValidationClientsideAdapters()
@@ -96,14 +94,7 @@ namespace Hospital_FinalP
 
             builder.Services.Configure<ApiBehaviorOptions>(apiBehaviorOptions =>
             {
-                //apiBehaviorOptions.InvalidModelStateResponseFactory = actionContext => {
-                //    var pd = new ProblemDetails();
-                //    pd.Type = apiBehaviorOptions.ClientErrorMapping[400].Link;
-                //    pd.Title = apiBehaviorOptions.ClientErrorMapping[400].Title;
-                //    pd.Status = 400;
-                //    pd.Extensions.Add("traceId", actionContext.HttpContext.TraceIdentifier);
-                //    return new BadRequestObjectResult(pd);
-                //};
+               
             });
 
 
@@ -112,7 +103,6 @@ namespace Hospital_FinalP
 
 
 
-            //builder.Services.AddSignalR();
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -176,7 +166,6 @@ namespace Hospital_FinalP
             app.UseStaticFiles();
             app.MapControllers();
 
-            //app.MapHub<ChatHub>("/Chat");
 
 
             app.Run();

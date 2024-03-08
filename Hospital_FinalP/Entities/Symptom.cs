@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Hospital_FinalP.Entities
+﻿namespace Hospital_FinalP.Entities
 {
     public class Symptom
     {

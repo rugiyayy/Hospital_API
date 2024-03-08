@@ -1,5 +1,4 @@
-﻿using Hospital_FinalP.Entities;
-
+﻿
 namespace Hospital_FinalP.DTOs.WSchedule
 {
     public class WorkingScheduleGetDto

@@ -5,6 +5,9 @@ using Hospital_FinalP.DTOs.ExaminationRooms;
 using Hospital_FinalP.DTOs.WSchedule;
 using Hospital_FinalP.Entities;
 using System.Text.RegularExpressions;
+using static Hospital_FinalP.DTOs.DoctorDetail.DoctorDetailPostDto;
+using static Hospital_FinalP.DTOs.ExaminationRooms.ExaminationRoomPostDto;
+using static Hospital_FinalP.DTOs.WSchedule.WorkingSchedulePostDto;
 
 namespace Hospital_FinalP.DTOs.Doctors
 {
@@ -14,7 +17,6 @@ namespace Hospital_FinalP.DTOs.Doctors
         public int DepartmentId { get; set; }
         public int DoctorTypeId { get; set; }
         public IFormFile? Photo { get; set; }
-        //public string PhotoPath { get; set; }
         public  DoctorDetailPostDto DoctorDetail { get; set; }
         public WorkingSchedulePostDto WorkingSchedule { get; set; }
         public ExaminationRoomPostDto ExaminationRoom { get; set; }
@@ -37,21 +39,29 @@ namespace Hospital_FinalP.DTOs.Doctors
                    .MinimumLength(4).WithMessage("Password must be at least 4 characters long.")
                    .Must(x => HasLetterAndDigit(x)).WithMessage("Password must contain at least one letter and one digit.");
 
+                RuleFor(x => x.Photo)
+                .NotEmpty().WithMessage("Photo field is required!");
 
 
+                RuleFor(x => x.DoctorDetail)
+               .NotNull().WithMessage("Doctor Detail is required.")
+               .SetValidator(new DoctorDetailPostDtoValidator());
+
+                RuleFor(x => x.WorkingSchedule)
+                    .NotNull().WithMessage("Working Schedule is required.")
+                    .SetValidator(new WorkingSchedulePostDtoValidator());
+
+                RuleFor(x => x.ExaminationRoom)
+                    .NotNull().WithMessage("Examination Room is required.")
+                    .SetValidator(new ExaminationRoomPostDtoValidator());
 
             }
             private bool IsAlphaOnly(string value)
             {
                 if (value == null) return false;
-                    return Regex.IsMatch(value, @"^[a-zA-Z]+$");
+                return Regex.IsMatch(value, @"^[a-zA-Z\s]+$");
             }
-            private bool IsEmailValid(string value)
-            {
-                if (value == null) return false;
-
-                return Regex.IsMatch(value, @"@[a-zA-Z0-9\-\.]+\.(com|ru)$");
-            }
+           
 
             private bool HasLetterAndDigit(string value)
             {

@@ -1,19 +1,14 @@
 ﻿using AutoMapper;
 using Hospital_FinalP.Data;
-using Hospital_FinalP.DTOs.Account;
-using Hospital_FinalP.DTOs.Apointment;
 using Hospital_FinalP.DTOs.Doctors;
 using Hospital_FinalP.DTOs.ExaminationRooms;
 using Hospital_FinalP.Entities;
-using Hospital_FinalP.Migrations;
 using Hospital_FinalP.Services.Abstract;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Hospital_FinalP.Controllers
 {
@@ -24,74 +19,15 @@ namespace Hospital_FinalP.Controllers
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
         private readonly IFileService _fileService;
+        private readonly UserManager<AppUser> _userManager;
 
-        public DoctorController(AppDbContext context, IMapper mapper, [FromServices] IFileService fileService)
+        public DoctorController(AppDbContext context, IMapper mapper, [FromServices] IFileService fileService, UserManager<AppUser> userManager)
         {
             _context = context;
             _mapper = mapper;
             _fileService = fileService;
+            _userManager = userManager;
         }
-
-        //[HttpGet]
-        //public IActionResult GetAll(/*[FromQuery(Name = "_page")] int page, [FromQuery(Name = "_perPage")]  int perPage*/)
-        //{
-        //    //    page = (page <= 0) ? 1 : page;
-
-        //    //    decimal doctorCount = _context.Doctors.Count();
-
-
-        //    //    int totalPages = (int)Math.Ceiling(doctorCount / perPage);
-
-
-        //    //var doctorDto = _context.Doctors
-        //    //    .Include(x => x.DoctorType)
-        //    //    .Include(x => x.Department)
-        //    //    .Include(x => x.DocPhoto)
-        //    //    .Include(x => x.DoctorDetail)
-        //    //    .Include(x => x.ExaminationRoom);
-
-        //    //  //.OrderBy(x => x.Id)
-        //    //  //  .Skip((page - 1) * perPage)
-        //    //  //  .Take(perPage)
-        //    //  //  .AsNoTracking()
-        //    //  //  .ToList();
-
-        //    //var dto = doctorDto.Select(x => _mapper.Map(x, new DoctorGetDto
-        //    //{
-        //    //    DoctorTypeName = x.DoctorType.Name,
-        //    //    DepartmentName = x.Department.Name,
-
-        //    //}));
-
-        //    //return Ok(dto);
-
-        //        var doctors = _context.Doctors
-        //                .Include(x => x.DoctorType)
-        //                .Include(x => x.Department)
-        //                .Include(x => x.DocPhoto)
-        //                .Include(x => x.DoctorDetail)
-        //                .Include(x => x.ExaminationRoom)
-        //                .AsNoTracking()
-        //                .ToList();
-
-
-        //      var doctorDto = doctors
-        //                 .Select(x => _mapper.Map(x, new DoctorGetDto
-        //                 {
-        //                     DoctorTypeName = x.DoctorType.Name,
-        //                     DepartmentName = x.Department.Name,
-        //                     ServiceCost = x.Department.ServiceCost,
-        //                 }))
-        //                 .OrderBy(x => x.FullName)
-        //                 .ToList();
-
-        //    return Ok(doctorDto);
-
-
-        //}
-
-        //paging filtering etc 
-
 
         [HttpGet]
         public async Task<IActionResult> GetAll(int? page, int? perPage, string doctorTypeName = null, string departmentName = null, string doctorName = null, int? examinationRoomNumber = null)
@@ -102,7 +38,7 @@ namespace Hospital_FinalP.Controllers
                         .Include(x => x.DoctorDetail)
                         .Include(x => x.ExaminationRoom);
 
-           
+
 
             if (!string.IsNullOrEmpty(doctorName))
             {
@@ -156,12 +92,17 @@ namespace Hospital_FinalP.Controllers
                 .ToListAsync();
 
 
+            var docs = await _context.Doctors
+                .Include(x => x.DoctorType)
+                        .Include(x => x.Department)
+                        .Include(x => x.DoctorDetail)
+                        .Include(x => x.ExaminationRoom)
+                        .AsNoTracking()
+                        .ToListAsync();
 
-            //var examinationRooms = await _context.ExaminationRooms
-            //        .AsNoTracking()
-            //        .ToListAsync();
 
-            return Ok(new { totalCount, doctors });
+
+            return Ok(new { totalCount, doctors, docs });
 
         }
 
@@ -180,12 +121,16 @@ namespace Hospital_FinalP.Controllers
             if (doctor is null) return NotFound("Doctor Not Found");
 
             var dto = _mapper.Map<DoctorGetDto>(doctor);
+            dto.ServiceCost=doctor.Department.ServiceCost;
+
             _mapper.Map(doctor, dto);
 
             return Ok(dto);
         }
 
         [HttpPost]
+        [Authorize(Roles = "Scheduler,Admin")]
+
         public async Task<IActionResult> Post([FromForm] DoctorPostDto dto, [FromServices] UserManager<AppUser> userManager)
         {
             #region ErrorHandling
@@ -229,13 +174,13 @@ namespace Hospital_FinalP.Controllers
             var doctorEntity = _mapper.Map<Doctor>(dto);
             doctorEntity.WorkingSchedule = new WorkingSchedule
             {
-                StartTime = dto.WorkingSchedule.StartTime != null ? TimeSpan.Parse(dto.WorkingSchedule.StartTime) : TimeSpan.FromHours(9), 
-                EndTime = dto.WorkingSchedule.EndTime != null ? TimeSpan.Parse(dto.WorkingSchedule.EndTime) : TimeSpan.FromHours(18), 
+                StartTime = dto.WorkingSchedule.StartTime != null ? TimeSpan.Parse(dto.WorkingSchedule.StartTime) : TimeSpan.FromHours(9),
+                EndTime = dto.WorkingSchedule.EndTime != null ? TimeSpan.Parse(dto.WorkingSchedule.EndTime) : TimeSpan.FromHours(18),
                 WorkingDays = dto.WorkingSchedule.WorkingDays.Select(d => new WorkingDay { DayOfWeek = d.DayOfWeek }).ToList()
             };
 
 
-            doctorEntity.MaxAppointments = doctorEntity.CalculateMaxAppointments(TimeSpan.FromMinutes(30)); // Assuming appointment duration is 30 minutes
+            doctorEntity.MaxAppointments = doctorEntity.CalculateMaxAppointments(TimeSpan.FromMinutes(30)); 
 
 
             _context.Add(doctorEntity);
@@ -265,39 +210,29 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromForm] DoctorPutDto dto)
+
+        [Authorize(Roles = "Scheduler,Admin")]
+
+        public async Task<IActionResult> Update(int id, [FromForm] DoctorPutDto dto)
         {
-
-
-            var existingDoctorWithEmail = _context.DoctorDetails
-       .Where(dd => dd.DoctorId != id)
-       .AsEnumerable()  
-       .FirstOrDefault(d => d.Email.Equals(dto.DoctorDetail.Email, StringComparison.OrdinalIgnoreCase));
-
-            if (existingDoctorWithEmail != null)
-            {
-                return Conflict($"Email {dto.DoctorDetail.Email} is already associated with another doctor.");
-            }
-
-
-            var existingDoctorPhoneNumber = _context.DoctorDetails
-     .Where(dd => dd.DoctorId != id)
-     .AsEnumerable()
-     .FirstOrDefault(d => d.PhoneNumber.Equals(dto.DoctorDetail.PhoneNumber, StringComparison.OrdinalIgnoreCase));
-
-            if (existingDoctorPhoneNumber != null)
-            {
-                return Conflict($"Phone Number {dto.DoctorDetail.PhoneNumber} is already associated with another doctor.");
-            }
-
-
             var doctor = _context.Doctors
-                .Include(x => x.DoctorDetail)
-                .Include(x => x.ExaminationRoom).FirstOrDefault(x => x.Id == id);
+                  .Include(x => x.DoctorDetail)
+                  .Include(x => x.ExaminationRoom)
+                  .FirstOrDefault(x => x.Id == id);
 
-            if (doctor is null) return NotFound();
+            if (doctor is null) return NotFound("Patient not found");
 
-
+            var user = await _userManager.FindByEmailAsync(doctor?.DoctorDetail?.Email);
+            if (user != null)
+            {
+                user.UserName = dto.DoctorDetail.Email;
+                user.Email = dto.DoctorDetail.Email;
+                var result = await _userManager.UpdateAsync(user);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors.Select(error => error.Description));
+                }
+            }
 
             if (dto.DoctorDetail != null)
             {
@@ -309,36 +244,41 @@ namespace Hospital_FinalP.Controllers
             }
 
 
+            var existingDoctorWithEmail = _context.DoctorDetails
+       .Where(dd => dd.DoctorId != id)
+       .AsEnumerable()
+       .FirstOrDefault(d => d.Email.Equals(dto.DoctorDetail.Email, StringComparison.OrdinalIgnoreCase));
+
+            if (existingDoctorWithEmail != null)
+            {
+                return Conflict($"Email {dto.DoctorDetail.Email} is already associated with another doctor.");
+            }
 
 
+            var existingDoctorPhoneNumber = _context.DoctorDetails
+                     .Where(dd => dd.DoctorId != id)
+                     .AsEnumerable()
+                     .FirstOrDefault(d => d.PhoneNumber.Equals(dto.DoctorDetail.PhoneNumber, StringComparison.OrdinalIgnoreCase));
 
-            //_mapper.Map(dto, doctor);
+            if (existingDoctorPhoneNumber != null)
+            {
+                return Conflict($"Phone Number {dto.DoctorDetail.PhoneNumber} is already associated with another doctor.");
+            }
 
-            //if (doctor.PhotoPath != null)
-            //{
-            //    //deleting old one
-            //    _fileService.DeleteFile(doctor.PhotoPath);
-            //}
+
 
             //if (dto.Photo != null)
             //{
+            //    // Delete the existing photo
+            //    if (doctor.PhotoPath != null)
+            //    {
+            //        _fileService.DeleteFile(doctor.PhotoPath);
+            //    }
+
+            //    // Save the new photo
             //    var imageName = _fileService.SaveImage(dto.Photo);
-            //    doctor.DocPhoto = new DocPhoto { PhotoPath = imageName };
-
-
+            //    doctor.PhotoPath = imageName;
             //}
-            if (dto.Photo != null)
-            {
-                // Delete the existing photo
-                if (doctor.PhotoPath != null)
-                {
-                    _fileService.DeleteFile(doctor.PhotoPath);
-                }
-
-                // Save the new photo
-                var imageName = _fileService.SaveImage(dto.Photo);
-                doctor.PhotoPath = imageName;
-            } 
 
             _context.SaveChanges();
 
@@ -348,20 +288,35 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+
+        [Authorize(Roles = "Admin")]
+
+        public async Task<IActionResult> Delete(int id)
         {
             var doctor = _context.Doctors
-                .FirstOrDefault(x => x.Id == id);
+                  .Include(x => x.DoctorDetail)
+                  .Include(x => x.ExaminationRoom)
+                  .FirstOrDefault(x => x.Id == id);
             if (doctor is null) return NotFound("Doctor Not Found");
 
+            var user = await _userManager.FindByEmailAsync(doctor?.DoctorDetail?.Email);
+            if (user != null)
+            {
+                var result = await _userManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                {
+                    return BadRequest(result.Errors.Select(error => error.Description));
+                }
+            }
 
             if (doctor.PhotoPath != null)
             {
                 _fileService.DeleteFile(doctor.PhotoPath);
             }
 
+
             _context.Remove(doctor);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok();
 
         }

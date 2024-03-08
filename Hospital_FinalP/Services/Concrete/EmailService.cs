@@ -1,12 +1,4 @@
-﻿using Hospital_FinalP.DTOs.EmailSender;
-using Hospital_FinalP.Services.Abstract;
-using Humanizer;
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Mvc;
-using MimeKit;
-using MimeKit.Text;
+﻿using Hospital_FinalP.Services.Abstract;
 using System.Net.Mail;
 using System.Net;
 using SmtpClient = System.Net.Mail.SmtpClient;
@@ -21,7 +13,7 @@ namespace Hospital_FinalP.Services.Concrete
         {
             using (MailMessage mail = new MailMessage())
             {
-                string senderInfo = $"From: Dr.{from}";
+                string senderInfo = $"From: Dr.   {from}";
 
                 mail.From = new MailAddress(from, fromDisplayName);
                 mail.To.Add(to);

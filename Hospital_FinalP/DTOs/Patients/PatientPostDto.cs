@@ -1,8 +1,4 @@
 ﻿using FluentValidation;
-using Hospital_FinalP.DTOs.Account;
-using Hospital_FinalP.DTOs.Apointment;
-using Hospital_FinalP.DTOs.DoctorDetail;
-using Hospital_FinalP.DTOs.ExaminationRooms;
 using System.Text.RegularExpressions;
 
 namespace Hospital_FinalP.DTOs.Patients
@@ -25,10 +21,19 @@ namespace Hospital_FinalP.DTOs.Patients
                     .NotEmpty().WithMessage("FullName field is required!")
                     .Must(x => IsAlphaOnly(x)).WithMessage("FullName should contain only letters.");
 
+                RuleFor(x => x.PhoneNumber)
+                    .NotEmpty().WithMessage("Phone Number is required.")
+                    .Matches(@"^[0-9]+$").WithMessage("Phone Number can only contain digits.");
+
                 RuleFor(x => x.Email)
                    .NotEmpty().WithMessage("Email field is required!")
                    .EmailAddress().WithMessage("Invalid email format.")
                    .Must(x => IsEmailValid(x)).WithMessage("Invalid email format. Email should end with '.com' or '.ru'.");
+
+
+                RuleFor(x => x.PatientIdentityNumber)
+                    .NotEmpty().WithMessage("Patient Identity Number is required.")
+                    .Matches(@"^[0-9a-zA-Z]+$").WithMessage("Patient Identity Number can only contain digits and letters.");
 
 
                 RuleFor(x => x.Password)
@@ -37,10 +42,19 @@ namespace Hospital_FinalP.DTOs.Patients
                    .Must(x => HasLetterAndDigit(x)).WithMessage("Password must contain at least one letter and one digit.");
 
 
-               
+                RuleFor(x => x.BirthDate)
+                    .NotEmpty().WithMessage("Birth Date is required.")
+                    .Must(BeAValidDate).WithMessage("Invalid Birth Date.");
+
 
             }
 
+
+            private bool BeAValidDate(DateTime birthDate)
+            {
+                var validAge = DateTime.Today.AddYears(-18);
+                return birthDate <= validAge;
+            }
 
             private bool IsAlphaOnly(string value)
             {

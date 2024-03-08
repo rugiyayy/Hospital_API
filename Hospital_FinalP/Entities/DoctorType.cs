@@ -10,11 +10,4 @@
         public List<Doctor> Doctors { get; set; }
     }
 
-
-    //public enum DoctorType
-    //{
-    //    Internist,
-    //    Pediatrician,
-    //    MedPed
-    //}
 }

@@ -1,4 +1,4 @@
-﻿using Hospital_FinalP.Entities;
+﻿using FluentValidation;
 
 namespace Hospital_FinalP.DTOs.WSchedule
 {
@@ -38,6 +38,25 @@ namespace Hospital_FinalP.DTOs.WSchedule
             }
         }
         public List<WorkingDayPostDto> WorkingDays { get; set; }
+
+
+
+        public class WorkingSchedulePostDtoValidator : AbstractValidator<WorkingSchedulePostDto>
+        {
+            public WorkingSchedulePostDtoValidator()
+            {
+                RuleFor(x => x.StartTime)
+                    .NotEmpty().WithMessage("Start Time is required.");
+
+                RuleFor(x => x.EndTime)
+                    .NotEmpty().WithMessage("End Time is required.")
+                    .GreaterThan(x => x.StartTime).WithMessage("End Time should be greater than Start Time.");
+
+            }
+        }
+
+
+
     }
     public class WorkingDayPostDto
     {

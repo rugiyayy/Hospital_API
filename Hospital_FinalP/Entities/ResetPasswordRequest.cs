@@ -1,5 +1,4 @@
-﻿using MimeKit;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Hospital_FinalP.Entities
 {

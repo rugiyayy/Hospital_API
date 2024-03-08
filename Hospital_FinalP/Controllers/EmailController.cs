@@ -15,6 +15,8 @@ using Humanizer;
 using AutoMapper;
 using Hospital_FinalP.DTOs.Email;
 using Hospital_FinalP.Services.Concrete;
+using Microsoft.AspNetCore.Authorization;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Hospital_FinalP.Controllers
 {
@@ -37,12 +39,16 @@ namespace Hospital_FinalP.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> GetAllEmails(int? page, int? perPage)
+        public async Task<IActionResult> GetAllEmails(int? page, int? perPage, string from = null)
         {
             if (_context.Emails == null) return NotFound();
 
             IQueryable<Email> query = _context.Emails;
 
+            if (!string.IsNullOrEmpty(from))
+            {
+                query = query.Where(a => a.From.Contains(from));
+            }
             int totalCount = await query.CountAsync();
 
             if (page.HasValue && perPage.HasValue)
@@ -74,7 +80,7 @@ namespace Hospital_FinalP.Controllers
 
 
         [HttpGet("{from}")]
-        public async Task<IActionResult> GetEmailsBySender(string from, int? page, int? perPage)
+        public async Task<IActionResult> GetEmailsBySender(string from, int? page, int? perPage, string to = null)
         {
             if (_context.Emails == null) return NotFound();
 
@@ -82,6 +88,10 @@ namespace Hospital_FinalP.Controllers
                 .Where(a => a.From == from && !a.IsDeleted)
                 .OrderBy(a => a.SentTime);
 
+            if (!string.IsNullOrEmpty(to))
+            {
+                emailQuery = emailQuery.Where(a => a.To.Contains(to));
+            }
 
             int totalCount = await emailQuery.CountAsync();
 
@@ -115,9 +125,12 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPost]
+
+        [Authorize(Roles = "Admin,Doctor")]
+
         public async Task<IActionResult> SendEmailToPatient([FromBody] EmailPostDto emailDto)
         {
-            var fromDisplayName= "REY Hospital";
+            var fromDisplayName = "REY Hospital";
 
             try
             {
@@ -138,6 +151,9 @@ namespace Hospital_FinalP.Controllers
 
 
         [HttpDelete("soft/{id}")]
+
+        [Authorize(Roles = "Admin, Doctor")]
+
         public async Task<IActionResult> SoftDelete(int id)
         {
             var email = await _context.Emails.FindAsync(id);
@@ -146,7 +162,6 @@ namespace Hospital_FinalP.Controllers
                 return NotFound();
             }
 
-            // Soft delete
             email.IsDeleted = true;
             await _context.SaveChangesAsync();
             return NoContent();
@@ -155,6 +170,9 @@ namespace Hospital_FinalP.Controllers
 
 
         [HttpDelete("{id}")]
+
+        [Authorize(Roles = "Admin")]
+
         public IActionResult Delete(int id)
         {
             var email = _context.Emails

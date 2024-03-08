@@ -1,8 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-
-namespace Hospital_FinalP.Entities
+﻿namespace Hospital_FinalP.Entities
 {
     public class WorkingSchedule
     {
@@ -10,7 +6,6 @@ namespace Hospital_FinalP.Entities
         public int Id { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan EndTime { get; set; }
-        //public DayOfWeek DayOfWeek { get; set; }
         public int DoctorId { get; set; }
         public Doctor Doctor { get; set; }
 

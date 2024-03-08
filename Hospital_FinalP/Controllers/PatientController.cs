@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
 using Hospital_FinalP.Data;
-using Hospital_FinalP.DTOs.Department;
-using Hospital_FinalP.DTOs.Doctors;
-using Hospital_FinalP.DTOs.ExaminationRooms;
 using Hospital_FinalP.DTOs.Patients;
 using Hospital_FinalP.Entities;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +15,13 @@ namespace Hospital_FinalP.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IMapper _mapper;
+        private readonly UserManager<AppUser> _userManager;
 
-        public PatientController(AppDbContext context, IMapper mapper)
+        public PatientController(AppDbContext context, IMapper mapper, UserManager<AppUser> userManager)
         {
             _context = context;
             _mapper = mapper;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -62,14 +61,12 @@ namespace Hospital_FinalP.Controllers
                .ToListAsync();
 
 
+            var pDta = await _context.Patients
+                        .AsNoTracking()
+                        .ToListAsync();
 
 
-            //var patientssDto = _context.Patients
-            //    .Select(x => _mapper.Map(x, new PatientGetDto()))
-            //    .AsNoTracking()
-            //    .ToList();
-
-            return Ok(new { patients , totalCount});
+            return Ok(new { patients, pDta, totalCount});
         }
 
         [HttpGet("{id}")]
@@ -85,7 +82,10 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPost]//register patient
-        public async Task<IActionResult> PatientSignUp([FromBody] PatientPostDto dto, [FromServices] UserManager<AppUser> userManager)
+        [AllowAnonymous]
+
+
+        public async Task<IActionResult> PatientSignUp([FromBody] PatientPostDto dto)
         {
             var existingPatient = _context.Patients
                     .AsEnumerable()
@@ -126,13 +126,13 @@ namespace Hospital_FinalP.Controllers
 
 
             var patientUser = new AppUser { UserName = dto.Email, Email = dto.Email, FullName = dto.FullName };
-            var result = await userManager.CreateAsync(patientUser, dto.Password);
+            var result = await _userManager.CreateAsync(patientUser, dto.Password);
 
             if (result.Succeeded)
             {
                 _context.Add(patientEntity);
                 _context.SaveChanges();
-                await userManager.AddToRoleAsync(patientUser, "Patient");
+                await _userManager.AddToRoleAsync(patientUser, "Patient");
 
             }
             else
@@ -145,10 +145,14 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] PatientPutDto dto)
+        [Authorize(Roles = "Scheduler,Admin")]
+
+        public async Task<IActionResult> Update(int id, [FromBody] PatientPutDto dto)
         {
             var patient = _context.Patients.FirstOrDefault(x => x.Id == id);
             if (patient is null) return NotFound("Patient not found");
+           
+
 
             var existingPhoneNumber = _context.Patients
        .Where(dd => dd.Id != id)
@@ -172,8 +176,22 @@ namespace Hospital_FinalP.Controllers
             }
 
 
+            var user = await _userManager.FindByEmailAsync(patient.Email);
+
+            if (user != null)
+            {
+                user.Email = dto.Email;
+                user.UserName = dto.Email;
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    return BadRequest(updateResult.Errors.Select(error => error.Description));
+                }
+            }
+
             _mapper.Map(dto, patient);
-            _context.SaveChanges();
+
+            await _context.SaveChangesAsync();
 
             return Ok(patient.Id);
 
@@ -182,14 +200,28 @@ namespace Hospital_FinalP.Controllers
 
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+
+        [Authorize(Roles = "Admin")]  
+
+        public async Task<IActionResult> Delete(int id)
         {
 
             var patient = _context.Patients.FirstOrDefault(x => x.Id == id);
             if (patient is null) return NotFound("Patient Not Found");
 
+            var user = await _userManager.FindByEmailAsync(patient.Email);
+            if (user != null)
+            {
+                var deleteResult = await _userManager.DeleteAsync(user);
+                if (!deleteResult.Succeeded)
+                {
+                    return BadRequest(deleteResult.Errors.Select(error => error.Description));
+                }
+            }
+
             _context.Remove(patient);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
+
 
             return Ok();
 

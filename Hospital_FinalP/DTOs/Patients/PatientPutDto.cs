@@ -1,7 +1,4 @@
 ﻿using FluentValidation;
-using Hospital_FinalP.DTOs.Account;
-using Hospital_FinalP.DTOs.Apointment;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 
 namespace Hospital_FinalP.DTOs.Patients
@@ -23,6 +20,9 @@ namespace Hospital_FinalP.DTOs.Patients
                    .EmailAddress().WithMessage("Invalid email format.")
                    .Must(x => IsEmailValid(x)).WithMessage("Invalid email format. Email should end with '.com' or '.ru'.");
 
+                RuleFor(x => x.PhoneNumber)
+                  .NotEmpty().WithMessage("Phone Number is required.")
+                  .Matches(@"^[0-9]+$").WithMessage("Phone Number can only contain digits.");
 
             }
 

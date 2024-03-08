@@ -3,6 +3,7 @@ using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.Department;
 using Hospital_FinalP.DTOs.DoctorType;
 using Hospital_FinalP.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,7 +60,12 @@ namespace Hospital_FinalP.Controllers
                .AsNoTracking()
                .ToListAsync();
 
-            return Ok(new { departments, totalCount });
+
+            var dDta = await _context.Departments
+                        .AsNoTracking()
+                        .ToListAsync();
+           
+            return Ok(new { departments, totalCount, dDta });
         }
 
         [HttpGet("{id}")]
@@ -79,7 +85,12 @@ namespace Hospital_FinalP.Controllers
             return Ok(dto);
         }
 
+
+        
         [HttpPost]
+        
+        [Authorize(Roles = "Scheduler,Admin")]
+
         public IActionResult Post([FromBody] DepartmentPostDto dto)
         {
             if (_context.Departments.Any(d => d.Name == dto.Name))
@@ -98,6 +109,9 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPut("{id}")]
+
+        [Authorize(Roles = "Scheduler,Admin")]
+
         public IActionResult Put(int id, [FromBody] DepartmentPutDto dto)
         {
             var department = _context.Departments.FirstOrDefault(x => x.Id == id);
@@ -118,6 +132,9 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpDelete("{id}")]
+
+        [Authorize(Roles = "Admin")]
+
         public IActionResult Delete(int id)
         {
             var department = _context.Departments.FirstOrDefault(x => x.Id == id);

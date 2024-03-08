@@ -3,17 +3,12 @@ using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.Account;
 using Hospital_FinalP.Entities;
 using Hospital_FinalP.Services.Abstract;
-using Humanizer;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using MimeKit;
-using System.Security.Cryptography;
 
 namespace Hospital_FinalP.Controllers
 {
@@ -24,18 +19,16 @@ namespace Hospital_FinalP.Controllers
         private readonly AppDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
-        private readonly SignInManager<AppUser> _signInManager;
 
-        public AccountController(AppDbContext context, UserManager<AppUser> userManager, IMapper mapper, SignInManager<AppUser> signInManager)
+        public AccountController(AppDbContext context, UserManager<AppUser> userManager, IMapper mapper)
         {
             _context = context;
             _userManager = userManager;
             _mapper = mapper;
-            _signInManager = signInManager;
         }
 
         [HttpGet("GetUsersByRole")]
-        public async Task<IActionResult> GetUsersByRole()
+        public async Task<IActionResult> GetUsersByRole(int? page, int? perPage)
         {
             var adminUsers = await _userManager.GetUsersInRoleAsync("Admin");
             var schedulerUsers = await _userManager.GetUsersInRoleAsync("Scheduler");
@@ -43,15 +36,77 @@ namespace Hospital_FinalP.Controllers
             var adminUserDtos = _mapper.Map<List<UserDto>>(adminUsers);
             var schedulerUserDtos = _mapper.Map<List<UserDto>>(schedulerUsers);
 
-            var usersByRole = new
+            foreach (var adminUserDto in adminUserDtos)
             {
-                AdminUsers = adminUserDtos,
-                SchedulerUsers = schedulerUserDtos
-            };
+                adminUserDto.IsAdmin = true;
+            }
 
-            return Ok(usersByRole);
+            foreach (var schedulerUserDto in schedulerUserDtos)
+            {
+                schedulerUserDto.IsAdmin = false;
+            }
+
+            var allUsers = adminUserDtos.Concat(schedulerUserDtos);
+
+            int totalCount = allUsers.Count();
+
+            if (page.HasValue && perPage.HasValue)
+            {
+                int currentPage = page.Value > 0 ? page.Value : 1;
+                int itemsPerPage = perPage.Value > 0 ? perPage.Value : 10;
+
+                int totalPages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+                currentPage = currentPage > totalPages ? totalPages : currentPage;
+
+                int skip = Math.Max((currentPage - 1) * itemsPerPage, 0);
+
+                allUsers = allUsers.Skip(skip).Take(itemsPerPage);
+            }
+
+            return Ok(new {allUsers, totalCount });
+
+
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetUserById(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var userDto = _mapper.Map<UserDto>(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            userDto.IsAdmin = roles.Contains("Admin"); 
+
+            return Ok(userDto);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null)
+            {
+                return NotFound("User not found.");
+            }
+
+            var result = await _userManager.DeleteAsync(user);
+            if (result.Succeeded)
+            {
+                return Ok("User deleted successfully");
+            }
+            else
+            {
+                return BadRequest(result.Errors.Select(error => error.Description));
+            }
+        }
+
+
+        [AllowAnonymous]
 
         [HttpPost("SignIn")]
         public async Task<IActionResult> SignIn([FromBody] SignInDto dto, [FromServices] IJwtTokenService jwtTokenService)
@@ -90,7 +145,7 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPost("SignUp")]
-        //[Authorize(Roles = "Admin,Patient")]
+        [Authorize(Roles = "Admin")]
 
         public async Task<IActionResult> SignUp([FromBody] SignUpDto dto)
         {
@@ -134,90 +189,81 @@ namespace Hospital_FinalP.Controllers
 
 
 
-        //[HttpPost("SignOut")]
-        //public async Task<IActionResult> Logout()
-        //{
-        //    await _signInManager.SignOutAsync();
-
-        //    return Ok();
-        //}
-
-
-
-        [HttpGet("forgotPassword")]
-        public async Task<IActionResult> ForgotPassword(string email)
+        [HttpPost("ForgotPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
-                return BadRequest("User not found.");
+                return NotFound("User not found");
             }
 
+            user.PasswordResetLinkUsed = false;
+            await _userManager.UpdateAsync(user);
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink = $"{model.FrontendPort}/resetPassword?email={model.Email}&token={Uri.EscapeDataString(token)}";
 
-            string resetCode = GenerateResetCode(); 
-            user.ResetCode = resetCode;
-            user.ResetCodeExpires = DateTime.Now.AddDays(1);
-            await _context.SaveChangesAsync();
+            await SendPasswordResetEmailAsync(user.Email, resetLink);
 
-            await SendResetPasswordEmail(user.Email, resetCode); 
-
-            return Ok("Reset code sent to your email.");
+            return Ok("Password reset link sent successfully");
         }
 
-
-
-        [HttpPost("resetPassword")]
-        public async Task<IActionResult> ResettPassword(ResetPasswordRequestDto request)
-        {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.ResetCode == request.Code);
-            if (user == null || user.ResetCodeExpires < DateTime.Now)
-            {
-                return BadRequest("Invalid CODE.");
-            }
-
-
-            user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, request.Password); 
-            user.ResetCode = null;
-            user.ResetCodeExpires = null;
-
-
-            await _context.SaveChangesAsync();
-
-            return Ok("Password successfully reset.");
-        }
-
-
-
-
-        private async Task SendResetPasswordEmail(string email, string code)
+        private async Task SendPasswordResetEmailAsync(string email, string resetLink)
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("REY Hospital", "demo1flight@gmail.com"));
             message.To.Add(new MailboxAddress("", email));
-            message.Subject = "Password Reset";
+            message.Subject = "Reset Your Password";
 
-            message.Body = new TextPart("plain")
-            {
-                Text = $"To reset your password, please use the following code: {code}"
-            };
+            var builder = new BodyBuilder();
+            builder.HtmlBody = $"<p>Please click the following link to reset your password:</p><p><a href=\"{resetLink}\">Reset Password</a></p>";
+
+
+            message.Body = builder.ToMessageBody();
 
             using (var client = new SmtpClient())
             {
                 await client.ConnectAsync("smtp.gmail.com", 587, false);
                 await client.AuthenticateAsync("demo1flight@gmail.com", "crvglwtaqkfpejxv");
-
                 await client.SendAsync(message);
                 await client.DisconnectAsync(true);
             }
         }
 
-        private string GenerateResetCode()
-        {
-            Random random = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-            return new string(Enumerable.Repeat(chars, 8).Select(s => s[random.Next(s.Length)]).ToArray());
-        }
 
+
+
+        [HttpPost("ResetPassword")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto model)
+        {
+           
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            if (user.PasswordResetLinkUsed)
+            {
+                return BadRequest("Link has already been used");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.Password);
+            if (result.Succeeded)
+            {
+                user.PasswordResetLinkUsed = true;
+                await _userManager.UpdateAsync(user);
+                return Ok("Password reset successfully");
+            }
+            else
+            {
+                return BadRequest(result.Errors.Select(error => error.Description));
+            }
+        }
 
     }
 

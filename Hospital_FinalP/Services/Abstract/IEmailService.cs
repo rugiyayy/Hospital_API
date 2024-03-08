@@ -1,6 +1,4 @@
-﻿using Hospital_FinalP.DTOs.EmailSender;
-
-namespace Hospital_FinalP.Services.Abstract
+﻿namespace Hospital_FinalP.Services.Abstract
 {
     public interface IEmailService
     {

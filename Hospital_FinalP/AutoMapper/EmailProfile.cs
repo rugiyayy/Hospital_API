@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Hospital_FinalP.DTOs.Department;
 using Hospital_FinalP.DTOs.Email;
 using Hospital_FinalP.DTOs.EmailSender;
 using Hospital_FinalP.Entities;

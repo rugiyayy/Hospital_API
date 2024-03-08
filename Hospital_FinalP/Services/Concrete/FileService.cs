@@ -1,5 +1,4 @@
 ﻿using Hospital_FinalP.Services.Abstract;
-using System.IO;
 
 namespace Hospital_FinalP.Services.Concrete
 {
@@ -22,7 +21,6 @@ namespace Hospital_FinalP.Services.Concrete
 
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
 
-                //extensions
                 FileInfo fileInfo = new(imageFile.FileName);
                 var imageName = imageFile.FileName + Guid.NewGuid().ToString() + fileInfo.Extension;
 

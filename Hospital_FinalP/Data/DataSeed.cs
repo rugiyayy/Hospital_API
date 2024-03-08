@@ -35,7 +35,8 @@ namespace Hospital_FinalP.Data
             admin = new AppUser
             {
                FullName = "AdminsFullName",
-                UserName = adminUserName
+                UserName = "adminA",
+                Email = "adminA@gmail.com",
             };
 
             await userManager.CreateAsync(admin, adminPassword);

@@ -19,22 +19,6 @@
                 int maxAppointments = (int)(totalWorkingHours.TotalMinutes / appointmentDuration.TotalMinutes);
                 MaxAppointments = maxAppointments;
 
-                //int bookedAppointmentsCount;
-                //int availableAppointments;
-
-                //if (Appointments != null)
-                //{
-                //     bookedAppointmentsCount = Appointments.Count;
-                //     //availableAppointments = maxAppointments - bookedAppointmentsCount;
-                 
-                   
-                //}else 
-                //{
-                //    availableAppointments = maxAppointments;
-                //}
-
-                //AvailableAppointments = availableAppointments;
-
                 return MaxAppointments;
             }
 
@@ -60,7 +44,6 @@
         public DoctorType DoctorType { get; set; }
 
         public DoctorDetail DoctorDetail { get; set; }
-        //public DocPhoto? DocPhoto { get; set; }
         public ExaminationRoom ExaminationRoom { get; set; }
         public List<Appointment> Appointments { get; set; }
 

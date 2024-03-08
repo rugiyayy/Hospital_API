@@ -2,6 +2,7 @@
 using Hospital_FinalP.Data;
 using Hospital_FinalP.DTOs.DoctorType;
 using Hospital_FinalP.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +58,12 @@ namespace Hospital_FinalP.Controllers
                .AsNoTracking()
                .ToListAsync();
 
-            return Ok(new { types , totalCount});
+            var tDta = await _context.DoctorTypes
+                       .AsNoTracking()
+                       .ToListAsync();
+
+
+            return Ok(new { types , totalCount , tDta });
         }
 
         [HttpGet("{id}")]
@@ -77,6 +83,8 @@ namespace Hospital_FinalP.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Scheduler,Admin")]
+
         public IActionResult Post([FromBody] DoctorTypePostDto dto)
         {
             if (_context.DoctorTypes.Any(d => d.Name == dto.Name))
@@ -93,6 +101,9 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpPut("{id}")]
+
+        [Authorize(Roles = "Scheduler,Admin")]
+
         public IActionResult Put(int id, [FromBody] DoctorTypePutDto dto) 
         {
             var type = _context.DoctorTypes.FirstOrDefault(x => x.Id == id);
@@ -111,6 +122,8 @@ namespace Hospital_FinalP.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+
         public IActionResult Delete(int id)
         {
             var type = _context.DoctorTypes.FirstOrDefault(x => x.Id == id);

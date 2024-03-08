@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-
-namespace Hospital_FinalP.Entities
+﻿namespace Hospital_FinalP.Entities
 {
     public class Patient
     {
@@ -12,7 +10,7 @@ namespace Hospital_FinalP.Entities
         public DateTime BirthDate { get; set; }
 
         public List<Appointment> Appointments { get; set; }
-
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     }
 }
